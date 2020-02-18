@@ -1,0 +1,12 @@
+{
+"type": "FeatureCollection",
+"name": "region",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+"features": [
+{ "type": "Feature", "properties": { "fid": 1, "ACTIVITY": "2", "LAND": "Italy", "DATE": "2019\/10\/20", "NAME": "Arco", "LEAD_TEXT": "Discover one of the most famous italian climbing destination !" }, "geometry": { "type": "Point", "coordinates": [ 10.886225046824922, 45.918118818769408 ] } },
+{ "type": "Feature", "properties": { "fid": 2, "ACTIVITY": "1", "LAND": "Georgia", "DATE": "2018\/01\/19", "NAME": "Gudauri", "LEAD_TEXT": "Ski touring adventures in the Caucasus" }, "geometry": { "type": "Point", "coordinates": [ 44.477156509994906, 42.476460678078702 ] } },
+{ "type": "Feature", "properties": { "fid": 4, "ACTIVITY": "3", "LAND": "France", "DATE": "2019\/09\/09", "NAME": "Les Landes", "LEAD_TEXT": "Beachbreaks and good food" }, "geometry": { "type": "Point", "coordinates": [ -1.427314630356787, 43.658745125650405 ] } },
+{ "type": "Feature", "properties": { "fid": 5, "ACTIVITY": "3", "LAND": "Spain", "DATE": "2019\/09\/23", "NAME": "Basque Country", "LEAD_TEXT": "Great Surf with a view ! Delicious Food and good Wine !" }, "geometry": { "type": "Point", "coordinates": [ -2.276490072178783, 43.292567187578911 ] } },
+{ "type": "Feature", "properties": { "fid": 6, "ACTIVITY": "1", "LAND": "Switzerland", "DATE": "2019\/02\/01", "NAME": "Bas Valais", "LEAD_TEXT": "Classics at home" }, "geometry": { "type": "Point", "coordinates": [ 6.968475818150273, 46.116385893965543 ] } }
+]
+}

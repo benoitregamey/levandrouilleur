@@ -1,0 +1,167 @@
+/* Initials Values */
+/* ------------------------------------------------------------------------------------------------------------------------------------------- */
+
+@font-face {
+  font-family: Frutiger;
+  src: url("../font/FrutigerLTStd-Light.otf");
+}
+
+body{
+	font-family: 'Frutiger';
+}
+
+.height-100{
+	height: 100vh;
+}
+
+.img-fluid-vertical{
+	height: 70%;
+	width: auto;
+}
+
+.line-height-110{
+	line-height: 110%;
+}
+
+.text-light-grey{
+	color: rgb(180,180,180);
+}
+
+/* Header Section */
+/* ------------------------------------------------------------------------------------------------------------------------------------------- */
+
+#header{
+	height: 40px;
+	z-index: 9999;
+	background-color: rgba(255,255,255,0.85)
+}
+
+#activity-count{
+	width: 20px;
+	max-width: 20px;
+	font-size: 15px;
+}
+
+#back-arrow-button{
+	max-width: 20px;
+	font-size: 18px;
+}
+
+#back-arrow-button:hover{
+	cursor: pointer;
+}
+
+.menu-button-container{
+	width: 30px;
+	max-width: 30px;
+}
+
+/* hamburger button ------------------------------------------------------------------------------------------------------------------------------- */
+.menu-button{
+	width: 30px;
+	margin-top: 10px;
+	background: transparent !important;
+}
+
+.menu-button:hover{
+	cursor: pointer;
+}
+
+.icon-bar {
+	width: 25px; 
+	height: 2px;
+	background-color: rgb(150,150,150);
+	display: block;
+	transition: all 0.2s;
+	margin-top: 5px
+}
+
+.menu-button:hover .icon-bar{
+	background-color: rgb(0,121,144);
+}
+
+.menu-button .top-bar {
+  transform: rotate(45deg);
+  transform-origin: 10% 10%;
+}
+ 
+.menu-button .middle-bar {
+  opacity: 0;
+}
+ 
+.menu-button .bottom-bar {
+  transform: rotate(-45deg);
+  transform-origin: 10% 90%;
+}
+
+.menu-button.collapsed .top-bar {
+  transform: rotate(0);
+}
+ 
+.menu-button.collapsed .middle-bar {
+  opacity: 1;
+}
+ 
+.menu-button.collapsed .bottom-bar {
+  transform: rotate(0);
+}
+
+/* Sidebar Section */
+/* ------------------------------------------------------------------------------------------------------------------------------------------- */
+
+.sidebar{
+	position: fixed;
+	left: 0px;
+	top: 0px;	
+	z-index: 999;
+	background-color: rgba(255,255,255);
+	margin-right: auto;
+	margin-left: 0px;
+	transition: all 0.5s;
+	overflow: scroll;
+}
+
+@media only screen and (max-width: 400px) {
+
+	.sidebar{
+		height: 0px;
+		width: 100vw;
+		max-width: 400px;
+		padding-top: 0px;
+	}	
+
+	.sidebar-expanded{
+		height: auto;
+		max-height: 90vh;
+		padding-top: 30px;
+	}
+}
+
+@media only screen and (min-width: 400px) {
+
+	.sidebar{
+		height: 100vh;
+		width: 0px;
+		padding-top: 30px;
+	}	
+
+	.sidebar-expanded{
+		width: 400px;
+	}
+}
+
+.sidebar-row{
+	height: 100px;
+	overflow: hidden;
+	border-bottom: 1px solid rgb(225,225,225);
+}
+
+.sidebar-row:hover{
+	cursor: pointer;
+	background-color: rgba(0,121,144,0.25);
+}
+
+.sidebar-icon{
+	max-width: 90%;
+	max-height: 70px;
+}
