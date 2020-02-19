@@ -10,18 +10,18 @@ https://levandrouilleur.com
 Structure
 
 * index.html --> Landing page
-    * Dependencies
-      * css/landing.css
-      * js/landing.js
-      * js/map-landing.js --> handles the map functions on the landing page (not on the webmapping application page)
-      * font/...
-      * icon/...
-      * Jquery
-      * Bootstrap 4
-      * fontawesome
-      * leaflet
-      * leaflet-gestures.handling --> handles the UX on mobile devices for the map on the landing page (pan only with 2 fingers)
-      * snap-widget --> creates mosaic with the 6 most recent instagram posts
+	* Dependencies
+		* css/landing.css
+    	* js/landing.js
+    	* js/map-landing.js --> handles the map functions on the landing page (not on the webmapping application page)
+    	* font/...
+    	* icon/...
+    	* Jquery
+    	* Bootstrap 4
+    	* fontawesome
+    	* leaflet
+    	* leaflet-gestures.handling --> handles the UX on mobile devices for the map on the landing page (pan only with 2 fingers)
+    	* snap-widget --> creates mosaic with the 6 most recent instagram posts
     
 * map.html --> webmapping application
 	* Dependencies
@@ -30,10 +30,10 @@ Structure
 		* icon/map/...
 		* font/...
 		* data/... --> contains the geojson read by ajax functions to populate html content and leaflet features
-      * Jquery
-      * Bootstrap 4
-      * fontawesome
-      * leaflet
+    	* Jquery
+    	* Bootstrap 4
+    	* fontawesome
+    	* leaflet
 		* Instagram embed API and JS --> handles the dynamic creation of an iframe with instagram post
         
 
