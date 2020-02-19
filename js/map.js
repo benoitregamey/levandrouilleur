@@ -334,22 +334,22 @@ function loadSelectedSpotSidebar(data,spot){
 
     htmlstring += '<div class="row mx-0 sidebar-row-spot">';
     htmlstring += '<div class="col">';
-    htmlstring += '<h6 class="mb-0 pt-1">' + data[index].properties.NAME + '<br></h6>';
+    htmlstring += '<h6 class="mb-0 pt-3 font-weight-bold text-info">' + data[index].properties.NAME + '<br></h6>';
 
     if (data[index].properties.ACTIVITY == "1"){
-        htmlstring += '<p class="p small mb-1 text-light-grey">Ski &bull; ' + date + '<br></p>';
+        htmlstring += '<p class="p  mb-1 text-light-grey">Ski &bull; ' + date + '<br></p>';
     }
     if (data[index].properties.ACTIVITY == "2"){
-        htmlstring += '<p class="p small mb-1 text-light-grey">Climbing &bull; ' + date + '<br></p>';
+        htmlstring += '<p class="p  mb-1 text-light-grey">Climbing &bull; ' + date + '<br></p>';
     }
     if (data[index].properties.ACTIVITY == "3"){
-        htmlstring += '<p class="p small mb-1 text-light-grey">Surf &bull; ' + date + '<br></p>';
+        htmlstring += '<p class="p  mb-1 text-light-grey">Surf &bull; ' + date + '<br></p>';
     }
     if (data[index].properties.ACTIVITY == "4"){
-        htmlstring += '<p class="p small mb-1 text-light-grey">Vanlife &bull; ' + date + '<br></p>';
+        htmlstring += '<p class="p  mb-1 text-light-grey">Vanlife &bull; ' + date + '<br></p>';
     }   
 
-    htmlstring += '<p class="p small mb-1 pb-1 line-height-110 text-dark">' + data[index].properties.LEAD_TEXT + '</p>';
+    htmlstring += '<p class="p mb-3 line-height-110 text-dark">' + data[index].properties.LEAD_TEXT + '</p>';
     htmlstring += '</div>';
     htmlstring += '</div>';
     $(".sidebar").append(htmlstring);
@@ -923,7 +923,7 @@ function expandSidebar(){
 
 $(document).ready(function(){
 // Actions to do when the user clicks on the menu button --------------------------------------------------------------------------------------------
-  $(".menu-button").click(function(){
+  $(".menu-button-container").click(function(){
     expandSidebar();
   });
 
