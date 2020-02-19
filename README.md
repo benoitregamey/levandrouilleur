@@ -7,20 +7,18 @@ Thus it is possible to host this website (static website) on AWS with S3 bucket 
 
 Structure
 
-index.html --> Landing page
-    Dependencies
-      css/landing.css
-      js/landing.js
-      js/map-landing.js --> handles the map functions on the landing page (not on the webmapping application page)
-      font/...
-      icon/...
-      Jquery
-      Bootstrap 4
-      fontawesome
-      leaflet
-      leaflet-gestures.handling --> handles the UX on mobile devices for the map on the landing page (pan only with 2 fingers)
-      snap-widget --> creates mosaic with the 6 most recent instagram posts
+*index.html --> Landing page
+    *Dependencies
+      *css/landing.css
+      *js/landing.js
+      *js/map-landing.js --> handles the map functions on the landing page (not on the webmapping application page)
+      *font/...
+      *icon/...
+      *Jquery
+      *Bootstrap 4
+      *fontawesome
+      *leaflet
+      *leaflet-gestures.handling --> handles the UX on mobile devices for the map on the landing page (pan only with 2 fingers)
+      *snap-widget --> creates mosaic with the 6 most recent instagram posts
         
-      
-
 https://levandrouilleur.com
