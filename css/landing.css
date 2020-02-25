@@ -149,12 +149,37 @@ body{
 /* Styles for the Follow Section */
 /* ------------------------------------------------------------------------------------------------------------------------------------------- */
 
-#insta-redirect{
-	width: 100%;
-	height: 100%;
+@media only screen and (max-width: 576px) {
+	.insta-post img{
+	  object-fit: cover; /* Do not scale the image */
+	  object-position: center; /* Center the image within the element */
+	  border: 1px solid white;
+	  width: 100%;
+	  height: 50vw;
+	}
 }
 
-#insta-redirect:hover{
+@media (max-width:768px) and (min-width:568px) {
+	.insta-post img{
+  		object-fit: cover; /* Do not scale the image */
+  		object-position: center; /* Center the image within the element */
+  		border: 1px solid white;
+  		width: 100%;
+  		height: 33vw;
+	}
+}
+
+@media only screen and (min-width: 768px) {
+	.insta-post img{
+	  object-fit: cover; /* Do not scale the image */
+	  object-position: center; /* Center the image within the element */
+	  border: 1px solid white;
+	  width: 100%;
+	  height: 22vw;
+	}
+}
+
+.insta-post:hover{
 	cursor: pointer;
 }
 
