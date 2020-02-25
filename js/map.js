@@ -262,9 +262,7 @@ function loadSpotSidebar(data,region){
 
         if (region!= undefined){
             if (data[i].properties.REGION_NAME == region){
-                if (lng >= map.getBounds().getWest() && lng <= map.getBounds().getEast() && lat >= map.getBounds().getSouth() && lat <= map.getBounds().getNorth()){
-                    sortedBydate.push({index:i, date:new Date(data[i].properties.DATE)});
-                }
+                sortedBydate.push({index:i, date:new Date(data[i].properties.DATE)});
             }
         }
         else{
@@ -871,6 +869,8 @@ map.on('moveend', function() {
             if (regiondata != undefined){
                 loadRegionSidebar(regiondata);
             }
+
+            selectLayerZoom = undefined;
         }  
     }
 });
@@ -1090,6 +1090,7 @@ $(document).ready(function(){
                     map.removeLayer(routeLayer);
                 }
                 regionLayer.addTo(map);
+                selectLayerZoom = undefined;
                 map.fitBounds(regionLayer.getBounds());
                 updateUrlParameters(window.location.href,undefined,undefined,map.getCenter().lat,map.getCenter().lng,map.getZoom());
             }
@@ -1116,10 +1117,6 @@ $(document).ready(function(){
                     updateUrlParameters(window.location.href,undefined,undefined,map.getCenter().lat,map.getCenter().lng,map.getZoom());
                 }
                 else{
-                    if (spotdata != undefined){
-                        loadSpotSidebar(spotdata, getUrlParameters(window.location.href).region.split('-').join(' '))
-                    }
-
                     resetOriginalIcon();
 
                     if (routeLayer != undefined){
@@ -1135,6 +1132,11 @@ $(document).ready(function(){
                     else{
                         map.fitBounds(selectLayer.getBounds());
                     }
+
+                    if (spotdata != undefined){
+                        loadSpotSidebar(spotdata, getUrlParameters(window.location.href).region.split('-').join(' '))
+                    }
+
                     updateUrlParameters(window.location.href,"unchanged",undefined,map.getCenter().lat,map.getCenter().lng,map.getZoom());
                 }
             }
