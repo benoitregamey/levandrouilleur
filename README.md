@@ -21,7 +21,6 @@ Structure
     	* fontawesome
     	* leaflet
     	* leaflet-gestures.handling --> handles the UX on mobile devices for the map on the landing page (pan only with 2 fingers)
-    	* snap-widget --> creates mosaic with the 6 most recent instagram posts
     
 * map.html --> webmapping application
 	* Dependencies
