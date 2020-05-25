@@ -57,6 +57,10 @@ body{
 	max-width: 30px;
 }
 
+#header-icon:hover{
+	cursor: pointer;
+}
+
 /* hamburger button ------------------------------------------------------------------------------------------------------------------------------- */
 .menu-button{
 	width: 30px;
