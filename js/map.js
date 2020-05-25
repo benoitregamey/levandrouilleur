@@ -3,7 +3,7 @@ var lightbasemap = L.tileLayer('https://api.maptiler.com/maps/positron/{z}/{x}/{
         tileSize: 512,
         zoomOffset: -1,
         minZoom: 1,
-        attribution: '<a href="index.html" target="_blank">© Le Vandrouilleur |</a> <a href="https://www.maptiler.com/copyright/" target="_blank">© MapTiler</a>',
+        attribution: '<a href="https://levandrouilleur.com" target="_blank">© Le Vandrouilleur |</a> <a href="https://www.maptiler.com/copyright/" target="_blank">© MapTiler</a>',
         crossOrigin: true
 });
 
@@ -11,7 +11,7 @@ var topobasemap = L.tileLayer('https://api.maptiler.com/maps/topo/{z}/{x}/{y}.pn
         tileSize: 512,
         zoomOffset: -1,
         minZoom: 1,
-        attribution: '<a href="index.html" target="_blank">© Le Vandrouilleur |</a> <a href="https://www.maptiler.com/copyright/" target="_blank">© MapTiler</a>',
+        attribution: '<a href="https://levandrouilleur.com" target="_blank">© Le Vandrouilleur |</a> <a href="https://www.maptiler.com/copyright/" target="_blank">© MapTiler</a>',
         crossOrigin: true
 });
 
@@ -1141,5 +1141,10 @@ $(document).ready(function(){
                 }
             }
         }
+    });
+
+// Action to do when the user clicks on the header icon --------------------------------------------------------------------------------------------
+    $("#header-icon").click(function(){
+        window.location.href = 'https://levandrouilleur.com';
     });
 });

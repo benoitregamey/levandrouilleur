@@ -7,6 +7,7 @@
 { "type": "Feature", "properties": { "fid": 6, "ACTIVITY": "1", "LAND": "Switzerland", "DATE": "2019\/02\/01", "NAME": "Bas Valais", "LEAD_TEXT": "Classics at home" }, "geometry": { "type": "Point", "coordinates": [ 6.968475818150273, 46.116385893965543 ] } },
 { "type": "Feature", "properties": { "fid": 7, "ACTIVITY": "1", "LAND": "France", "DATE": "2020\/03\/13", "NAME": "Pays de La Meije", "LEAD_TEXT": "Ski Touring Paradise in Les Ecrins National Park" }, "geometry": { "type": "Point", "coordinates": [ 6.405054530520265, 45.034898654759303 ] } },
 { "type": "Feature", "properties": { "fid": 8, "ACTIVITY": "4", "LAND": "Switzerland", "DATE": "2020\/03\/17", "NAME": "Les Paccots", "LEAD_TEXT": "Back home for a while because of Covid-19" }, "geometry": { "type": "Point", "coordinates": [ 6.967772120485168, 46.515464981071737 ] } },
-{ "type": "Feature", "properties": { "fid": 9, "ACTIVITY": "2", "LAND": "Switzerland", "DATE": "2020\/04\/23", "NAME": "Berner Oberland", "LEAD_TEXT": "Nice multi- and single-pitch climbs in our beautiful country " }, "geometry": { "type": "Point", "coordinates": [ 8.185621928514704, 46.727361506855488 ] } }
+{ "type": "Feature", "properties": { "fid": 9, "ACTIVITY": "2", "LAND": "Switzerland", "DATE": "2020\/04\/23", "NAME": "Berner Oberland", "LEAD_TEXT": "Nice multi- and single-pitch climbs in our beautiful country " }, "geometry": { "type": "Point", "coordinates": [ 8.185621928514704, 46.727361506855488 ] } },
+{ "type": "Feature", "properties": { "fid": 10, "ACTIVITY": "2", "LAND": "Switzerland", "DATE": "2020\/05\/15", "NAME": "Oberwallis and Ticino", "LEAD_TEXT": "Great climbs on a wonderful rock" }, "geometry": { "type": "Point", "coordinates": [ 8.867127513019923, 46.405138962323697 ] } }
 ]
 }
