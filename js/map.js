@@ -454,7 +454,12 @@ $.getJSON('data/region.geojson',function(data){
             map.setView([getUrlParameters(window.location.href).lat,getUrlParameters(window.location.href).lng], getUrlParameters(window.location.href).zoom);
         }
         else{
-    	   map.fitBounds(regionLayer.getBounds());
+            var sortedBydate = [];
+            for (var i = 0; i < regiondata.length; i++){
+                sortedBydate.push({index:i, date:new Date(regiondata[i].properties.DATE)});
+            }
+            sortedBydate.sort((a, b) => b.date - a.date);
+            map.setView([regiondata[sortedBydate[0].index].geometry.coordinates[1],regiondata[sortedBydate[0].index].geometry.coordinates[0]],5);
         }
     	regionLayer.addTo(map);
 
@@ -1091,7 +1096,15 @@ $(document).ready(function(){
                 }
                 regionLayer.addTo(map);
                 selectLayerZoom = undefined;
-                map.fitBounds(regionLayer.getBounds());
+
+                var sortedBydate = [];
+                for (var i = 0; i < regiondata.length; i++){
+                    sortedBydate.push({index:i, date:new Date(regiondata[i].properties.DATE)});
+                }
+                sortedBydate.sort((a, b) => b.date - a.date);
+                map.setView([regiondata[sortedBydate[0].index].geometry.coordinates[1],regiondata[sortedBydate[0].index].geometry.coordinates[0]],5);
+                regionLayer.addTo(map);
+
                 updateUrlParameters(window.location.href,undefined,undefined,map.getCenter().lat,map.getCenter().lng,map.getZoom());
             }
             // Case when there are 1 selected spot

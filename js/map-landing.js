@@ -108,9 +108,16 @@ $.getJSON('data/region.geojson',function(data){
         }
   	});
 
-    map.fitBounds(regionLayer.getBounds());
-	regionLayer.addTo(map);
     regiondata = data.features;
+
+    var sortedBydate = [];
+    for (var i = 0; i < regiondata.length; i++){
+        sortedBydate.push({index:i, date:new Date(regiondata[i].properties.DATE)});
+    }
+    sortedBydate.sort((a, b) => b.date - a.date);
+    map.setView([regiondata[sortedBydate[0].index].geometry.coordinates[1],regiondata[sortedBydate[0].index].geometry.coordinates[0]],5);
+    regionLayer.addTo(map);
+
 });
 
 // function that reset original icon to the layers selectLayer and spotLayer
