@@ -355,7 +355,7 @@ function loadSelectedSpotSidebar(data,spot){
     if (data[index].properties.INSTA_POST_ID != null){
         var instapost;
         var request = new XMLHttpRequest();
-        request.open('GET', 'https://api.instagram.com/oembed/?url=https://www.instagram.com/p/' + data[index].properties.INSTA_POST_ID + '/&omitscript=true', true);
+        request.open('GET', 'https://graph.facebook.com/v8.0/instagram_oembed?url=https://www.instagram.com/p/' + data[index].properties.INSTA_POST_ID + '/&access_token=358977528652478|e602aadfadb8814f5cf7c19932040fa5&omitscript=true', true);
         request.onload = function() {
             instapost = JSON.parse(this.response).html;
             $(".sidebar").append(instapost);
