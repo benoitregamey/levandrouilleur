@@ -18,7 +18,15 @@ function loadInstaFeedSmall(){
 		for (var i = 0; i < 2; i++){
         	var index = sortedBydate[i].index;
 
-        	var imgURL = 'https://instagram.com/p/' + data.features[index].properties.INSTA_POST_ID + '/media/?size=l';
+        	var imgURL;
+
+        	var request = new XMLHttpRequest();
+        	request.open('GET', 'https://graph.facebook.com/v8.0/instagram_oembed?url=https://www.instagram.com/p/' + data.features[index].properties.INSTA_POST_ID + '/&access_token=358977528652478|e602aadfadb8814f5cf7c19932040fa5&omitscript=true', false);
+        	request.onload = function() {
+            	imgURL = JSON.parse(this.response).thumbnail_url;
+        	}
+        	request.send();  
+
         	var postLink = 'https://www.instagram.com/p/' + data.features[index].properties.INSTA_POST_ID;
 
         	htmlstring += '<div class="col-6 px-0 insta-post">';
@@ -32,7 +40,15 @@ function loadInstaFeedSmall(){
 		for (var i = 2; i < 4; i++){
         	var index = sortedBydate[i].index;
 
-        	var imgURL = 'https://instagram.com/p/' + data.features[index].properties.INSTA_POST_ID + '/media/?size=l';
+        	var imgURL;
+
+        	var request = new XMLHttpRequest();
+        	request.open('GET', 'https://graph.facebook.com/v8.0/instagram_oembed?url=https://www.instagram.com/p/' + data.features[index].properties.INSTA_POST_ID + '/&access_token=358977528652478|e602aadfadb8814f5cf7c19932040fa5&omitscript=true', false);
+        	request.onload = function() {
+            	imgURL = JSON.parse(this.response).thumbnail_url;
+        	}
+        	request.send(); 
+
         	var postLink = 'https://www.instagram.com/p/' + data.features[index].properties.INSTA_POST_ID;
 
         	htmlstring += '<div class="col-6 px-0 insta-post">';
@@ -46,7 +62,15 @@ function loadInstaFeedSmall(){
 		for (var i = 4; i < 6; i++){
         	var index = sortedBydate[i].index;
 
-        	var imgURL = 'https://instagram.com/p/' + data.features[index].properties.INSTA_POST_ID + '/media/?size=l';
+        	var imgURL;
+        	
+        	var request = new XMLHttpRequest();
+        	request.open('GET', 'https://graph.facebook.com/v8.0/instagram_oembed?url=https://www.instagram.com/p/' + data.features[index].properties.INSTA_POST_ID + '/&access_token=358977528652478|e602aadfadb8814f5cf7c19932040fa5&omitscript=true', false);
+        	request.onload = function() {
+            	imgURL = JSON.parse(this.response).thumbnail_url;
+        	}
+        	request.send(); 
+
         	var postLink = 'https://www.instagram.com/p/' + data.features[index].properties.INSTA_POST_ID;
 
         	htmlstring += '<div class="col-6 px-0 insta-post">';
