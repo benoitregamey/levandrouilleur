@@ -19,34 +19,30 @@ var map = L.map('map', {
 	zoomControl: false,
 	layers: lightbasemap,
     minZoom: 2,
+    zoomSnap: 0.1,
+    wheelPxPerZoomLevel: 14,
 });
 
 // Icons for the markers ----------------------------------------------------------------------------------------------------------------------------
-var surficonRegio = L.icon({
-    iconUrl: 'icon/map/marker-icon-surf.png',
-    iconSize:     [19, 42], // original 19,42
-    iconAnchor:   [8, 16], 
+var climbiconSpot = L.icon({
+    iconUrl: 'icon/map/marker-icon-climb.png',
+    iconSize:     [12, 38], // original 13,42
+    iconAnchor:   [7, 21], 
 });
 
-var skiiconRegio = L.icon({
-    iconUrl: 'icon/map/marker-icon-ski.png',
-    iconSize:     [22, 42], // original 22,42
-    iconAnchor:   [11, 21], 
-});
-
-var climbiconRegio = L.icon({
+var climbiconSpotSelected = L.icon({
     iconUrl: 'icon/map/marker-icon-climb.png',
     iconSize:     [13, 42], // original 13,42
     iconAnchor:   [7, 21], 
 });
 
-var rockiconSpot = L.icon({
+var skiiconSpot = L.icon({
     iconUrl: 'icon/map/marker-icon-spot-rock.png',
     iconSize:     [23,17], // original 34,25
     iconAnchor:   [11, 9], 
 });
 
-var rockiconSpotSelected = L.icon({
+var skiiconSpotSelected = L.icon({
     iconUrl: 'icon/map/marker-icon-spot-rock.png',
     iconSize:     [34,25], // original 34,25
     iconAnchor:   [17, 12], 
@@ -78,22 +74,18 @@ var lifestyleiconSelected = L.icon({
 
 
 // Initializing layers and data ---------------------------------------------------------------------------------------------------------------------
-var regionLayer;
-var regiondata;
 var spotLayer;
 var spotdata;
-var selectLayer;
-var selectLayerZoom;
 var routeLayer;
 var routedata;
 var selectrouteLayer;
+var previousZoom;
 
 // function that update URL with the parameters region, spot, lat, lng, zoom. If one of the following are set to 'unchanged', take the existing 
 // ones (if they exist) or ignore them, If one of the following are set to 'undefined', force to erase them even if thex exist.
 // URL strucutre : ../map.html?region=xxxx&spot=xxxx&lat=xxxx&lng=xxxx&zoom=xxxx 
-function updateUrlParameters(url,region,spot,lat,lng,zoom){
+function updateUrlParameters(url,spot,lat,lng,zoom){
     var results = {
-        'region' : undefined,
         'spot' : undefined,
         'lat' : undefined,
         'lng' : undefined,
@@ -103,9 +95,6 @@ function updateUrlParameters(url,region,spot,lat,lng,zoom){
         var urloptions = url.split('?')[1].split('&');
         var i;
         for (i = 0; i < urloptions.length; i++){
-            if (urloptions[i].split('=')[0] == 'region'){
-                results['region'] = urloptions[i].split('=')[1];
-            }
             if (urloptions[i].split('=')[0] == 'spot'){
                 results['spot'] = urloptions[i].split('=')[1];
             }
@@ -121,9 +110,6 @@ function updateUrlParameters(url,region,spot,lat,lng,zoom){
         }
     }
 
-    if (region != 'unchanged'){
-        results['region'] = region;
-    }
     if (spot != 'unchanged'){
         results['spot'] = spot;
     } 
@@ -138,9 +124,6 @@ function updateUrlParameters(url,region,spot,lat,lng,zoom){
     }  
 
     var newurl = window.location.href.split('?')[0].concat('?');
-    if (results['region'] != undefined){
-        newurl = newurl.concat('region=').concat(results['region']).concat('&');
-    }
     if (results['spot'] != undefined){
         newurl = newurl.concat('spot=').concat(results['spot']).concat('&');
     }
@@ -160,7 +143,6 @@ function updateUrlParameters(url,region,spot,lat,lng,zoom){
 // function that returns current URL parameters region, spot, lat, lng, zoom -----------------------------------------------------------------------
 function getUrlParameters(url){
     var results = {
-        'region' : undefined,
         'spot' : undefined,
         'lat' : undefined,
         'lng' : undefined,
@@ -173,9 +155,6 @@ function getUrlParameters(url){
         var urloptions = url.split('?')[1].split('&');
         var i;
         for (i = 0; i < urloptions.length; i++){
-            if (urloptions[i].split('=')[0] == 'region'){
-                results['region'] = urloptions[i].split('=')[1];
-            }
             if (urloptions[i].split('=')[0] == 'spot'){
                 results['spot'] = urloptions[i].split('=')[1];
             }
@@ -193,15 +172,21 @@ function getUrlParameters(url){
     return results;
 }
 
-// function that loads the regions available in data into the sidebar, load all regions -------------------------------------------------------------
-function loadRegionSidebar(data){
+// function that loads the spots available in data into the sidebar, possibility to filter by region ------------------------------------------------
+// Loads only the spots that are on the current map extent !
+function loadSpotSidebar(data){
 
     $(".sidebar").empty();
 
     var sortedBydate = [];
     for (var i = 0; i < data.length; i++){
-        sortedBydate.push({index:i, date:new Date(data[i].properties.DATE)});
+        var lat = data[i].geometry.coordinates[1];
+        var lng = data[i].geometry.coordinates[0];
+        if (lng >= map.getBounds().getWest() && lng <= map.getBounds().getEast() && lat >= map.getBounds().getSouth() && lat <= map.getBounds().getNorth()){
+            sortedBydate.push({index:i, date:new Date(data[i].properties.DATE)});
+        }
     }
+
     sortedBydate.sort((a, b) => b.date - a.date);
 
     for (var i = 0; i < sortedBydate.length; i++){
@@ -219,72 +204,6 @@ function loadRegionSidebar(data){
             htmlstring += '<div class="col-3 px-0 pl-2"><img src="icon/map/sidebar-icon-climb.png" class="sidebar-icon mx-auto d-block"></div>';
         }
         if (data[index].properties.ACTIVITY == "3"){
-            htmlstring += '<div class="col-3 px-0 pl-2"><img src="icon/map/sidebar-icon-surf.png" class="sidebar-icon mx-auto d-block"></div>';
-        }
-        if (data[index].properties.ACTIVITY == "4"){
-            htmlstring += '<div class="col-3 px-0 pl-2"><img src="icon/map/sidebar-icon-lifestyle.png" class="sidebar-icon mx-auto d-block"></div>';
-        }
-
-        htmlstring += '<div class="col-9 py-2 px-2">';
-        htmlstring += '<h6 class="mb-0 pt-1">' + data[index].properties.NAME + '<br></h6>';
-
-        if (data[index].properties.ACTIVITY == "1"){
-            htmlstring += '<p class="p small mb-1 text-light-grey">Ski &bull; ' + data[index].properties.LAND + ' &bull; ' + date + '<br></p>';
-        }
-        if (data[index].properties.ACTIVITY == "2"){
-            htmlstring += '<p class="p small mb-1 text-light-grey">Climbing &bull; ' + data[index].properties.LAND + ' &bull; ' + date + '<br></p>';
-        }
-        if (data[index].properties.ACTIVITY == "3"){
-            htmlstring += '<p class="p small mb-1 text-light-grey">Surf &bull; ' + data[index].properties.LAND + ' &bull; ' + date + '<br></p>';
-        }
-        if (data[index].properties.ACTIVITY == "4"){
-            htmlstring += '<p class="p small mb-1 text-light-grey">Vanlife &bull; ' + data[index].properties.LAND + ' &bull; ' + date + '<br></p>';
-        }              
-        htmlstring += '<p class="p small mb-0 pb-1 line-height-110 text-dark">' + data[index].properties.LEAD_TEXT + '</p>';
-        htmlstring += '</div>';
-        htmlstring += '</div>';
-        $(".sidebar").append(htmlstring);
-    }
-    $("#activity-count").html(sortedBydate.length);
-    $("#back-arrow-button").empty();
-}
-
-// function that loads the spots available in data into the sidebar, possibility to filter by region ------------------------------------------------
-// Loads only the spots that are on the current map extent !
-function loadSpotSidebar(data,region){
-
-    $(".sidebar").empty();
-
-    var sortedBydate = [];
-    for (var i = 0; i < data.length; i++){
-        var lat = data[i].geometry.coordinates[1];
-        var lng = data[i].geometry.coordinates[0];
-
-        if (region!= undefined){
-            if (data[i].properties.REGION_NAME == region){
-                sortedBydate.push({index:i, date:new Date(data[i].properties.DATE)});
-            }
-        }
-        else{
-            if (lng >= map.getBounds().getWest() && lng <= map.getBounds().getEast() && lat >= map.getBounds().getSouth() && lat <= map.getBounds().getNorth()){
-                sortedBydate.push({index:i, date:new Date(data[i].properties.DATE)});
-            }
-        }
-    }
-    sortedBydate.sort((a, b) => b.date - a.date);
-
-    for (var i = 0; i < sortedBydate.length; i++){
-
-        var htmlstring = "";
-        var index = sortedBydate[i].index;
-        var date = data[index].properties.DATE.split("/")[2] + '.' + data[index].properties.DATE.split("/")[1] + '.' + data[index].properties.DATE.split("/")[0];
-
-        htmlstring += '<div class="row sidebar-row mx-0 align-items-center">';
-
-        if (data[index].properties.ACTIVITY == "1" || data[index].properties.ACTIVITY == "2"){
-            htmlstring += '<div class="col-3 px-0 pl-2"><img src="icon/map/sidebar-icon-spot-rock.png" class="sidebar-icon mx-auto d-block"></div>';
-        }
-        if (data[index].properties.ACTIVITY == "3"){
             htmlstring += '<div class="col-3 px-0 pl-2"><img src="icon/map/sidebar-icon-spot-water.png" class="sidebar-icon mx-auto d-block"></div>';
         }
         if (data[index].properties.ACTIVITY == "4"){
@@ -295,16 +214,16 @@ function loadSpotSidebar(data,region){
         htmlstring += '<h6 class="mb-0 pt-1">' + data[index].properties.NAME + '<br></h6>';
 
         if (data[index].properties.ACTIVITY == "1"){
-            htmlstring += '<p class="p small mb-1 text-light-grey">Ski &bull; ' + date + '<br></p>';
+            htmlstring += '<p class="p small mb-1 text-light-grey">' + data[index].properties.LAND +' &bull; Ski &bull; ' + date + '<br></p>';
         }
         if (data[index].properties.ACTIVITY == "2"){
-            htmlstring += '<p class="p small mb-1 text-light-grey">Climbing &bull; ' + date + '<br></p>';
+            htmlstring += '<p class="p small mb-1 text-light-grey">' + data[index].properties.LAND +' &bull; Climbing &bull; ' + date + '<br></p>';
         }
         if (data[index].properties.ACTIVITY == "3"){
-            htmlstring += '<p class="p small mb-1 text-light-grey">Surf &bull; ' + date + '<br></p>';
+            htmlstring += '<p class="p small mb-1 text-light-grey">' + data[index].properties.LAND +' &bull; Surf &bull; ' + date + '<br></p>';
         }
         if (data[index].properties.ACTIVITY == "4"){
-            htmlstring += '<p class="p small mb-1 text-light-grey">Vanlife &bull; ' + date + '<br></p>';
+            htmlstring += '<p class="p small mb-1 text-light-grey">' + data[index].properties.LAND +' &bull; Vanlife &bull; ' + date + '<br></p>';
         } 
         htmlstring += '<p class="p small mb-0 pb-1 line-height-110 text-dark">' + data[index].properties.LEAD_TEXT + '</p>';
         htmlstring += '</div>';
@@ -312,7 +231,6 @@ function loadSpotSidebar(data,region){
         $(".sidebar").append(htmlstring);
     }
     $("#activity-count").html(sortedBydate.length);
-    $("#back-arrow-button").html('<i class="fas fa-angle-double-left fa-lg"></i>');
 }
 
 // function that loads the selected spot into the sidebar with embbed instagram post ----------------------------------------------------------------
@@ -335,16 +253,16 @@ function loadSelectedSpotSidebar(data,spot){
     htmlstring += '<h6 class="mb-0 pt-3 font-weight-bold text-info">' + data[index].properties.NAME + '<br></h6>';
 
     if (data[index].properties.ACTIVITY == "1"){
-        htmlstring += '<p class="p  mb-1 text-light-grey">Ski &bull; ' + date + '<br></p>';
+        htmlstring += '<p class="p small mb-1 text-light-grey">' + data[index].properties.LAND +' &bull; Ski &bull; ' + date + '<br></p>';
     }
     if (data[index].properties.ACTIVITY == "2"){
-        htmlstring += '<p class="p  mb-1 text-light-grey">Climbing &bull; ' + date + '<br></p>';
+        htmlstring += '<p class="p small mb-1 text-light-grey">' + data[index].properties.LAND +' &bull; Climbing &bull; ' + date + '<br></p>';
     }
     if (data[index].properties.ACTIVITY == "3"){
-        htmlstring += '<p class="p  mb-1 text-light-grey">Surf &bull; ' + date + '<br></p>';
+        htmlstring += '<p class="p small mb-1 text-light-grey">' + data[index].properties.LAND +' &bull; Surf &bull; ' + date + '<br></p>';
     }
     if (data[index].properties.ACTIVITY == "4"){
-        htmlstring += '<p class="p  mb-1 text-light-grey">Vanlife &bull; ' + date + '<br></p>';
+        htmlstring += '<p class="p small mb-1 text-light-grey">' + data[index].properties.LAND +' &bull; Vanlife &bull; ' + date + '<br></p>';
     }   
 
     htmlstring += '<p class="p mb-3 line-height-110 text-dark">' + data[index].properties.LEAD_TEXT + '</p>';
@@ -368,124 +286,15 @@ function loadSelectedSpotSidebar(data,spot){
     $("#back-arrow-button").html('<i class="fas fa-angle-double-left fa-lg"></i>');
 }
 
-// Initializing regionLayer -------------------------------------------------------------------------------------------------------------------------
-$.getJSON('data/region.geojson',function(data){
-	regionLayer = L.geoJSON(data,{
-    	pointToLayer: function (feature, latlng) {
-    		switch (feature.properties.ACTIVITY){
-    			case "1" : return L.marker(latlng, {icon: skiiconRegio});
-    			case "2" : return L.marker(latlng, {icon: climbiconRegio});
-    			case "3" : return L.marker(latlng, {icon: surficonRegio});
-                case "4" : return L.marker(latlng, {icon: lifestyleicon});
-    		}
-    	},
-        // Create a Selection Layer while clicking on a region (only with spots from the clicked region)
-        onEachFeature: function(feature, layer){
-            layer.on('click', function(){
-                if(spotdata != undefined){
-                    if(map.hasLayer(selectLayer)){
-                        map.removeLayer(selectLayer);
-                    }
-                    selectLayer = L.geoJSON(spotdata,{
-                        pointToLayer: function(feature, latlng){
-                            switch (feature.properties.ACTIVITY){
-                                case "1" : return L.marker(latlng, {icon: rockiconSpot});
-                                case "2" : return L.marker(latlng, {icon: rockiconSpot});
-                                case "3" : return L.marker(latlng, {icon: watericonSpot});
-                                case "4" : return L.marker(latlng, {icon: lifestyleicon});
-                            }
-                        },
-                        filter: function(spotfeature,layer){
-                            return spotfeature.properties.REGION_NAME == feature.properties.NAME;
-                        },
-                        onEachFeature : onSpotClick
-                    });
-                    map.removeLayer(regionLayer);
-                    map.addLayer(selectLayer);
-                    // if the region clicked is a ski region, add a selection layer with the ski routes
-                    if (feature.properties.ACTIVITY == "1"){
-                        if (routedata != undefined){
-                            if(map.hasLayer(selectrouteLayer)){
-                                map.removeLayer(selectrouteLayer);
-                            }
-                            selectrouteLayer = L.geoJSON(routedata,{
-                                filter: function(routefeature,layer){
-                                    return routefeature.properties.REGION_NAME == feature.properties.NAME;
-                                },
-                                style: {"color":"#006699", "weigth":5, "opacity":0.7},
-                                onEachFeature : onRouteClick                         
-                            });
-                            map.addLayer(selectrouteLayer);                     
-                        }
-                    }
-                    if (map.hasLayer(selectrouteLayer) == true){
-                        map.fitBounds(selectrouteLayer.getBounds());
-                        setTimeout(function(){
-                            selectLayerZoom = map.getZoom();
-                        }, 300);                       
-                    }else{
-                        map.fitBounds(selectLayer.getBounds());
-                        setTimeout(function(){
-                            selectLayerZoom = map.getZoom();
-                        }, 300);
-                    }
-                    // update url with the selected region, change space with '-'
-                    updateUrlParameters(window.location.href,feature.properties.NAME.split(' ').join('-'),'unchanged','unchanged','unchanged','unchanged');
-
-                    // Load spots into the sidebar according to the region selected
-                    loadSpotSidebar(spotdata, feature.properties.NAME);
-                }
-            });
-        }
-  	});
-
-    regiondata = data.features;
-
-    // Load the regionLayer to the map only if no region and no spot is selected
-    if (getUrlParameters(window.location.href).region == undefined && getUrlParameters(window.location.href).spot == undefined){
-        // If lat,lng,zoom are set in the URL, use these information to set the map view. If not use the bounding box of the regionLayer
-        if (getUrlParameters(window.location.href).lat != undefined && getUrlParameters(window.location.href).lng != undefined && getUrlParameters(window.location.href).zoom != undefined){
-            if (parseInt(getUrlParameters(window.location.href).zoom) > 11){
-                if (map.hasLayer(lightbasemap)) {
-                    map.removeLayer(lightbasemap);
-                    map.addLayer(topobasemap);
-                }
-            }
-            map.setView([getUrlParameters(window.location.href).lat,getUrlParameters(window.location.href).lng], getUrlParameters(window.location.href).zoom);
-        }
-        else{
-            var sortedBydate = [];
-            for (var i = 0; i < regiondata.length; i++){
-                sortedBydate.push({index:i, date:new Date(regiondata[i].properties.DATE)});
-            }
-            sortedBydate.sort((a, b) => b.date - a.date);
-            map.setView([regiondata[sortedBydate[0].index].geometry.coordinates[1],regiondata[sortedBydate[0].index].geometry.coordinates[0]],5);
-        }
-    	regionLayer.addTo(map);
-
-        loadRegionSidebar(data.features);
-    }
-});
-
-// function that reset original icon to the layers selectLayer and spotLayer
+// function that reset original icon to the spotLayer
 function resetOriginalIcon(){
-    if (map.hasLayer(selectLayer)){
-        selectLayer.eachLayer(function(originalIcon){
-            if (originalIcon.feature.properties.ACTIVITY == "1" || originalIcon.feature.properties.ACTIVITY == "2"){
-                originalIcon.setIcon(rockiconSpot);
-            }
-            if (originalIcon.feature.properties.ACTIVITY == "3"){
-                originalIcon.setIcon(watericonSpot);
-            }
-            if (originalIcon.feature.properties.ACTIVITY == "4"){
-                originalIcon.setIcon(lifestyleicon);
-            }                            
-        })
-    }
     if (map.hasLayer(spotLayer)){
         spotLayer.eachLayer(function(originalIcon){
-            if (originalIcon.feature.properties.ACTIVITY == "1" || originalIcon.feature.properties.ACTIVITY == "2"){
-                originalIcon.setIcon(rockiconSpot);
+            if (originalIcon.feature.properties.ACTIVITY == "1"){
+                originalIcon.setIcon(skiiconSpot);
+            }
+            if (originalIcon.feature.properties.ACTIVITY == "2"){
+                originalIcon.setIcon(climbiconSpot);
             }
             if (originalIcon.feature.properties.ACTIVITY == "3"){
                 originalIcon.setIcon(watericonSpot);
@@ -503,7 +312,8 @@ function onSpotClick(feature,layer){
         resetOriginalIcon();
 
         if (feature.properties.ACTIVITY == "1"){
-            layer.setIcon(rockiconSpotSelected);
+            layer.setIcon(skiiconSpotSelected);
+            map.addLayer(routeLayer);
 
             if (map.hasLayer(routeLayer)){
                 routeLayer.setStyle({"color":"#006699", "weigth":5, "opacity":0.6});
@@ -511,40 +321,53 @@ function onSpotClick(feature,layer){
                     if (route.feature.properties.SPOT_NAME == feature.properties.NAME){
                         route.setStyle({"color":"#006699", "weigth":5, "opacity":1});
                         map.fitBounds(route.getBounds());
-                    }
-                });
-            }
-            if (map.hasLayer(selectrouteLayer)){
-                selectrouteLayer.setStyle({"color":"#006699", "weigth":5, "opacity":0.6});
-                selectrouteLayer.eachLayer(function(route){
-                    if (route.feature.properties.SPOT_NAME == feature.properties.NAME){
-                        route.setStyle({"color":"#006699", "weigth":5, "opacity":1});
-                        map.fitBounds(route.getBounds());
+                        previousZoom = map.getBoundsZoom(route.getBounds());
                     }
                 });
             }
         }
 
         if (feature.properties.ACTIVITY == "2"){
-            layer.setIcon(rockiconSpotSelected);
-            map.setView([feature.geometry.coordinates[1],feature.geometry.coordinates[0]],14);
+            layer.setIcon(climbiconSpotSelected);
+            if (map.getZoom() > 14){
+                map.setView([feature.geometry.coordinates[1],feature.geometry.coordinates[0]]);
+                previousZoom = map.getZoom();           
+            }
+            else{
+                map.setView([feature.geometry.coordinates[1],feature.geometry.coordinates[0]],14);
+                previousZoom = 14;
+            }
         }
 
         if (feature.properties.ACTIVITY == "3"){
             layer.setIcon(watericonSpotSelected);
-            map.setView([feature.geometry.coordinates[1],feature.geometry.coordinates[0]],14);                 
+            if (map.getZoom() > 14){
+                map.setView([feature.geometry.coordinates[1],feature.geometry.coordinates[0]]);
+                previousZoom = map.getZoom();           
+            }
+            else{
+                map.setView([feature.geometry.coordinates[1],feature.geometry.coordinates[0]],14);
+                previousZoom = 14;
+            }                
         }
 
         if (feature.properties.ACTIVITY == "4"){
             layer.setIcon(lifestyleiconSelected);
-            map.setView([feature.geometry.coordinates[1],feature.geometry.coordinates[0]],14);                   
+            if (map.getZoom() > 14){
+                map.setView([feature.geometry.coordinates[1],feature.geometry.coordinates[0]]);
+                previousZoom = map.getZoom();           
+            }
+            else{
+                map.setView([feature.geometry.coordinates[1],feature.geometry.coordinates[0]],14);
+                previousZoom = 14;
+            }               
         }
 
         // Load spot into the sidebar
         loadSelectedSpotSidebar(spotdata, feature.properties.NAME);
 
         // update URL with selected spot, replace space with '-'
-        updateUrlParameters(window.location.href,'unchanged',feature.properties.NAME.split(' ').join('-'),'unchanged','unchanged','unchanged'); 
+        updateUrlParameters(window.location.href,feature.properties.NAME.split(' ').join('-'),'unchanged','unchanged','unchanged'); 
 
         // If sidebar is collapsed, expand it
         if ($(".menu-button").hasClass("collapsed")){
@@ -564,26 +387,19 @@ function onRouteClick(feature,layer){
             layer.setStyle({"color":"#006699", "weigth":5, "opacity":1});
             spotLayer.eachLayer(function(spot){
                 if (spot.feature.properties.NAME == feature.properties.SPOT_NAME){
-                    spot.setIcon(rockiconSpotSelected);
+                    spot.setIcon(skiiconSpotSelected);
                 }
             });
         }
-        if (map.hasLayer(selectrouteLayer)){
-            selectrouteLayer.setStyle({"color":"#006699", "weigth":5, "opacity":0.6});
-            layer.setStyle({"color":"#006699", "weigth":5, "opacity":1});
-            selectLayer.eachLayer(function(spot){
-                if (spot.feature.properties.NAME == feature.properties.SPOT_NAME){
-                    spot.setIcon(rockiconSpotSelected);
-                }
-            });
-        }
+
         map.fitBounds(layer.getBounds());
+        previousZoom = map.getBoundsZoom(layer.getBounds());
 
         // Load spot into the sidebar
         loadSelectedSpotSidebar(spotdata, feature.properties.SPOT_NAME);        
 
         // update URL with selected spot, replace space with '-'
-        updateUrlParameters(window.location.href,'unchanged',feature.properties.SPOT_NAME.split(' ').join('-'),'unchanged','unchanged','unchanged');
+        updateUrlParameters(window.location.href,feature.properties.SPOT_NAME.split(' ').join('-'),'unchanged','unchanged','unchanged');
 
         // If sidebar is collapsed, expand it
         if ($(".menu-button").hasClass("collapsed")){
@@ -594,84 +410,49 @@ function onRouteClick(feature,layer){
 
 // Initializing spotLayer ---------------------------------------------------------------------------------------------------------------------------
 $.getJSON('data/spot.geojson',function(data){
-    spotLayer = L.geoJSON(data,{
+    spotLayer = L.markerClusterGroup({
+        showCoverageOnHover: false,
+    });
+    spotLayer.addLayer(L.geoJSON(data,{
         pointToLayer: function(feature, latlng){
             switch (feature.properties.ACTIVITY){
-                case "1" : return L.marker(latlng, {icon: rockiconSpot});
-                case "2" : return L.marker(latlng, {icon: rockiconSpot});
+                case "1" : return L.marker(latlng, {icon: skiiconSpot});
+                case "2" : return L.marker(latlng, {icon: climbiconSpot});
                 case "3" : return L.marker(latlng, {icon: watericonSpot});
                 case "4" : return L.marker(latlng, {icon: lifestyleicon});
             }
         },
         onEachFeature: onSpotClick
-    });
+    }));
+
     spotdata = data.features;
 
-    // if region is set in the URL -> create a SelectLayer, if spot is set, set the selected icon
-    if (getUrlParameters(window.location.href).region != undefined){
-        selectLayer = L.geoJSON(data,{
-            pointToLayer: function(feature, latlng){
-                switch (feature.properties.ACTIVITY){
-                    case "1" : return L.marker(latlng, {icon: rockiconSpot});
-                    case "2" : return L.marker(latlng, {icon: rockiconSpot});
-                    case "3" : return L.marker(latlng, {icon: watericonSpot});
-                    case "4" : return L.marker(latlng, {icon: lifestyleicon});                    
-                }
-            },
-            filter: function(feature,layer){
-                return feature.properties.REGION_NAME == getUrlParameters(window.location.href).region.split('-').join(' ');
-            },
-            onEachFeature : onSpotClick
-        });
-
-        if (regionLayer != undefined){
-            map.removeLayer(regionLayer);
-        }
-        map.addLayer(selectLayer);
-
-        // if ACTIVITY is not 1 (ski) zoom to the SelectLayer's bounds. If spot is set, zoom to the spot
-        if (spotdata.filter(function(item){return item.properties.REGION_NAME == getUrlParameters(window.location.href).region.split('-').join(' ')})[0].properties.ACTIVITY != "1"){
-            selectLayerZoom = map.getBoundsZoom(selectLayer.getBounds());
-            if (getUrlParameters(window.location.href).spot == undefined){
-                if (map.getBoundsZoom(selectLayer.getBounds()) > 11){
+    // Load the spotLayer to the map only if no spot is selected in the URL
+    if (getUrlParameters(window.location.href).spot == undefined){
+        // If lat,lng,zoom are set in the URL, use these information to set the map view. If not use the bounding box of the spotLayer
+        if (getUrlParameters(window.location.href).lat != undefined && getUrlParameters(window.location.href).lng != undefined && getUrlParameters(window.location.href).zoom != undefined){
+            if (parseInt(getUrlParameters(window.location.href).zoom) > 11){
+                if (map.hasLayer(lightbasemap)) {
                     map.removeLayer(lightbasemap);
                     map.addLayer(topobasemap);
                 }
-                map.fitBounds(selectLayer.getBounds());
             }
-            else{
-                selectLayer.eachLayer(function(layer){
-                    if (layer.feature.properties.NAME == getUrlParameters(window.location.href).spot.split('-').join(' ')){
-                        map.removeLayer(lightbasemap);
-                        map.addLayer(topobasemap);
-                        map.setView([layer.feature.geometry.coordinates[1],layer.feature.geometry.coordinates[0]],14);
-                    }
-                });                
-            }     
+            map.setView([getUrlParameters(window.location.href).lat,getUrlParameters(window.location.href).lng], getUrlParameters(window.location.href).zoom);
         }
-
-        if (getUrlParameters(window.location.href).spot != undefined){
-            selectLayer.eachLayer(function(spot){
-                if (spot.feature.properties.NAME == getUrlParameters(window.location.href).spot.split('-').join(' ')){
-                    switch (spot.feature.properties.ACTIVITY){
-                        case "1" : return spot.setIcon(rockiconSpotSelected);
-                        case "2" : return spot.setIcon(rockiconSpotSelected);
-                        case "3" : return spot.setIcon(watericonSpotSelected);
-                        case "4" : return spot.setIcon(lifestyleiconSelected);
-                    }                    
-                }
-            });
-            // If spot is selected, load selected spot into the sidebar
-            loadSelectedSpotSidebar(data.features,getUrlParameters(window.location.href).spot.split('-').join(' '));
-        }
-        // If no spot is selected, load spots into the sidebar according to the region selected
         else{
-            loadSpotSidebar(data.features,getUrlParameters(window.location.href).region.split('-').join(' '));
+            var sortedBydate = [];
+            for (var i = 0; i < spotdata.length; i++){
+                sortedBydate.push({index:i, date:new Date(spotdata[i].properties.DATE)});
+            }
+            sortedBydate.sort((a, b) => b.date - a.date);
+            map.setView([spotdata[sortedBydate[0].index].geometry.coordinates[1],spotdata[sortedBydate[0].index].geometry.coordinates[0]],5);
         }
+        spotLayer.addTo(map);
+        loadSpotSidebar(spotdata);
     }
 
-    // if spot is set in the URL but no Region, set style for the selected and zoom on it
-    if (getUrlParameters(window.location.href).spot != undefined && getUrlParameters(window.location.href).region == undefined){
+    // if spot is set in the URL, set style for the selected and zoom on it
+    if (getUrlParameters(window.location.href).spot != undefined){
         map.addLayer(spotLayer);
         spotLayer.eachLayer(function(spot){
             if (spot.feature.properties.NAME == getUrlParameters(window.location.href).spot.split('-').join(' ')){
@@ -682,32 +463,16 @@ $.getJSON('data/spot.geojson',function(data){
                     map.setView([spot.feature.geometry.coordinates[1],spot.feature.geometry.coordinates[0]],14);
                 } 
                 switch (spot.feature.properties.ACTIVITY){
-                    case "1" : return spot.setIcon(rockiconSpotSelected);
-                    case "2" : return spot.setIcon(rockiconSpotSelected);
+                    case "1" : return spot.setIcon(skiiconSpotSelected);
+                    case "2" : return spot.setIcon(climbiconSpotSelected);
                     case "3" : return spot.setIcon(watericonSpotSelected);
                     case "4" : return spot.setIcon(lifestyleiconSelected);
                 } 
             }
         });
 
-        // Load the selected spot into the sidebar
-        loadSelectedSpotSidebar(data.features,getUrlParameters(window.location.href).spot.split('-').join(' '));
-
-        if (regionLayer != undefined){
-            map.removeLayer(regionLayer);
-        }    
-    }
-
-    // if the zoomlevel is set in the URL and if it is greater than 9, add spotLayer to the map
-    if (getUrlParameters(window.location.href).zoom != undefined && getUrlParameters(window.location.href).region == undefined && getUrlParameters(window.location.href).spot == undefined){
-        if (parseInt(getUrlParameters(window.location.href).zoom) > 9){
-            if (regionLayer != undefined){
-                map.removeLayer(regionLayer);
-            }
-            map.addLayer(spotLayer);
-            // Load spot into the sidebar
-            loadSpotSidebar(data.features);
-        }
+        // Load the selected spot into the sidebar and expand it
+        loadSelectedSpotSidebar(data.features,getUrlParameters(window.location.href).spot.split('-').join(' ')); 
     }
 });
 
@@ -717,50 +482,11 @@ $.getJSON('data/route.geojson',function(data){
         style : {"color":"#006699", "weigth":5, "opacity":0.6},
         onEachFeature : onRouteClick
     });
+
     routedata = data.features;
 
-    // if region is set in the URL -> create a selectrouteLayer, if spot is set, set the selected style
-    if (getUrlParameters(window.location.href).region != undefined){
-        if (routedata.filter(function(item){return item.properties.REGION_NAME == getUrlParameters(window.location.href).region.split('-').join(' ')}).length > 0){
-            selectrouteLayer = L.geoJSON(data,{
-                style : {"color":"#006699", "weigth":5, "opacity":0.6},
-                onEachFeature : onRouteClick,
-                filter: function(feature,layer){
-                    return feature.properties.REGION_NAME == getUrlParameters(window.location.href).region.split('-').join(' ');
-                }
-            });
-            if (getUrlParameters(window.location.href).spot != undefined){
-                selectrouteLayer.eachLayer(function(route){
-                    if (route.feature.properties.SPOT_NAME == getUrlParameters(window.location.href).spot.split('-').join(' ')){
-                        route.setStyle({"color":"#006699", "weigth":5, "opacity":1});
-                        if (map.getBoundsZoom(route.getBounds()) > 11){
-                            map.removeLayer(lightbasemap);
-                            map.addLayer(topobasemap);
-                        }
-                        map.fitBounds(route.getBounds());
-                    }
-                });
-            }
-
-            selectLayerZoom = map.getBoundsZoom(selectrouteLayer.getBounds());
-
-            if (getUrlParameters(window.location.href).spot == undefined){
-                if (map.getBoundsZoom(selectrouteLayer.getBounds()) > 11){
-                    map.removeLayer(lightbasemap);
-                    map.addLayer(topobasemap);
-                }
-                map.fitBounds(selectrouteLayer.getBounds());
-            }
-
-            if (regionLayer != undefined){
-                map.removeLayer(regionLayer);
-            }
-            map.addLayer(selectrouteLayer);
-        }
-    }
-
-    // if spot is set in the URL but no Region, set style for the selected and zoom on it
-    if (getUrlParameters(window.location.href).spot != undefined && getUrlParameters(window.location.href).region == undefined){
+    // if spot is set in the URL, set style for the selected and zoom on it
+    if (getUrlParameters(window.location.href).spot != undefined){
         if (routedata.filter(function(item){return item.properties.SPOT_NAME == getUrlParameters(window.location.href).spot.split('-').join(' ')}).length > 0){
             routeLayer.eachLayer(function(route){
                 if (route.feature.properties.SPOT_NAME == getUrlParameters(window.location.href).spot.split('-').join(' ')){
@@ -773,18 +499,18 @@ $.getJSON('data/route.geojson',function(data){
                 }
             });
         }
-        if (regionLayer != undefined){
-            map.removeLayer(regionLayer);
-        }
+
         map.addLayer(routeLayer);
+
     }
 
-    // if the zoomlevel is set in the URL and if it is greater than 9, add spotLayer to the map
-    if (getUrlParameters(window.location.href).zoom != undefined && getUrlParameters(window.location.href).region == undefined && getUrlParameters(window.location.href).spot == undefined){
-        if (parseInt(getUrlParameters(window.location.href).zoom) > 9){
-            if (regionLayer != undefined){
-                map.removeLayer(regionLayer);
-            }
+    // if the zoomlevel is set in the URL and if it is greater than 11, add routeLayer to the map
+    if (getUrlParameters(window.location.href).zoom != undefined && getUrlParameters(window.location.href).spot == undefined){
+        if (parseInt(getUrlParameters(window.location.href).zoom) > 11){
+            if (map.hasLayer(lightbasemap)) {
+                map.removeLayer(lightbasemap);
+                map.addLayer(topobasemap);
+            } 
             map.addLayer(routeLayer);
         }
     }
@@ -807,87 +533,46 @@ map.on('zoomend', function() {
     }
 });
 
-// Function to manage regionLayer, spotLayer and selectlayer according to the zoomlevel -------------------------------------------------------------
+// Function to manage routelayer and sidebar content according to the zoomlevel -------------------------------------------------------------
 map.on('moveend', function() {
     var zoomlevel = map.getZoom();
-    if (zoomlevel > 9){
-        if (map.hasLayer(regionLayer)) {
-            map.removeLayer(regionLayer);
-            // check if layer already loaded from JSON
-            if (spotLayer != undefined && map.hasLayer(selectLayer) == false && routeLayer != undefined){
-                map.addLayer(spotLayer);
-                map.addLayer(routeLayer);
-            }          
+    if (zoomlevel > 11){
+        if (map.hasLayer(routeLayer) == false && routeLayer != undefined) {
+            map.addLayer(routeLayer);
+        }       
+    }
+    if (zoomlevel <= 11){
+        if (map.hasLayer(routeLayer)) {
+            map.removeLayer(routeLayer);
         } 
-        if (spotdata != undefined){
-            if (getUrlParameters(window.location.href).spot == undefined){
-                if (getUrlParameters(window.location.href).region != undefined){
-                    loadSpotSidebar(spotdata, getUrlParameters(window.location.href).region.split('-').join(' '));
-                }
-                else{
-                    loadSpotSidebar(spotdata);
-                }
-            }
+    }
+
+    // If no spot is selected, reload the sidebar content to match the map extent
+    if (getUrlParameters(window.location.href).spot == undefined){
+        loadSpotSidebar(spotdata);
+    }
+
+    // If 1 spot is selected and the user zoom out, reload the sidebar to unselect the spot
+    if (getUrlParameters(window.location.href).spot != undefined && zoomlevel < previousZoom){
+        loadSpotSidebar(spotdata);
+        resetOriginalIcon();
+        updateUrlParameters(window.location.href,undefined,'unchanged','unchanged',map.getZoom());
+        if (routeLayer != undefined){
+            routeLayer.setStyle({"color":"#006699", "weigth":5, "opacity":0.6});
         }
-    }
+        $("#back-arrow-button").html('');
+    }    
 
-    if (map.hasLayer(selectLayer) == false){
-
-        if (zoomlevel <= 9){
-
-            resetOriginalIcon();
-
-            if (map.hasLayer(spotLayer)){
-                map.removeLayer(spotLayer);
-                map.removeLayer(routeLayer);
-                routeLayer.setStyle({"color":"#006699", "weigth":5, "opacity":0.6});
-            }
-            updateUrlParameters(window.location.href,'unchanged',undefined,'unchanged','unchanged','unchanged');
-
-            // check if layer already loaded from JSON
-            if (regionLayer != undefined){
-                map.addLayer(regionLayer);
-            }
-            if (regiondata != undefined){
-                loadRegionSidebar(regiondata);
-            }
-        }   
-    }
-
-    if (map.hasLayer(selectLayer)){
-        if (zoomlevel < selectLayerZoom && zoomlevel <= 9){
-
-            resetOriginalIcon();
-
-            map.removeLayer(selectLayer);
-            if (map.hasLayer(selectrouteLayer)){
-                map.removeLayer(selectrouteLayer);
-            }
-            selectLayerZoom = undefined;
-            updateUrlParameters(window.location.href,undefined,undefined,'unchanged','unchanged','unchanged');
-
-            // check if layer already loaded from JSON
-            if (regionLayer != undefined){
-                map.addLayer(regionLayer);
-            }
-
-            if (regiondata != undefined){
-                loadRegionSidebar(regiondata);
-            }
-
-            selectLayerZoom = undefined;
-        }  
-    }
 });
 
 // Function that change URL according to the zoomlevel - fired when zooming -------------------------------------------------------------------------
 map.on('zoomend',function(){
-    updateUrlParameters(window.location.href,'unchanged','unchanged','unchanged','unchanged',map.getZoom());
+    updateUrlParameters(window.location.href,'unchanged','unchanged','unchanged',map.getZoom());
 });
 
 // Function that change URL according to the Center of Map - fired when panning ---------------------------------------------------------------------
 map.on('moveend',function(){
-    updateUrlParameters(window.location.href,'unchanged','unchanged',map.getCenter().lat,map.getCenter().lng,map.getZoom());
+    updateUrlParameters(window.location.href,'unchanged',map.getCenter().lat,map.getCenter().lng,map.getZoom());
 });
 
 
@@ -934,226 +619,77 @@ $(document).ready(function(){
 
 // Action to do when the user clicks the sidebar -------------------------------------------------------------------------------------
     $(".sidebar").on("click",".sidebar-row",function(){
+    
+    // Case when no spot is selected
+        if (getUrlParameters(window.location.href).spot == undefined){
 
-        // Case when there is only region in the sidebar
-        if (getUrlParameters(window.location.href).region == undefined && getUrlParameters(window.location.href).spot == undefined && parseInt(getUrlParameters(window.location.href).zoom) <= 9){
-            if(spotdata != undefined){
-                var region = $(this).find("h6").text();
-                if(map.hasLayer(selectLayer)){ 
-                    map.removeLayer(selectLayer);
-                }
-                selectLayer = L.geoJSON(spotdata,{
-                    pointToLayer: function(feature, latlng){
-                        switch (feature.properties.ACTIVITY){
-                            case "1" : return L.marker(latlng, {icon: rockiconSpot});
-                            case "2" : return L.marker(latlng, {icon: rockiconSpot});
-                            case "3" : return L.marker(latlng, {icon: watericonSpot});
-                            case "4" : return L.marker(latlng, {icon: lifestyleicon});
+            resetOriginalIcon();
+            var selectedspot = $(this).find("h6").text();
+            var activity = $(this).find(".text-light-grey").text().split(" ")[0];
+
+            if (map.hasLayer(spotLayer)){
+                spotLayer.eachLayer(function(spot){
+                    if (spot.feature.properties.NAME == selectedspot){
+                        if (activity != "Ski"){
+                            if (map.getZoom() > 14){
+                                map.setView([spot.feature.geometry.coordinates[1],spot.feature.geometry.coordinates[0]]);
+                                previousZoom = map.getZoom();           
+                            }
+                            else{
+                                map.setView([spot.feature.geometry.coordinates[1],spot.feature.geometry.coordinates[0]],14);
+                                previousZoom = 14;
+                            }
                         }
-                    },
-                    filter: function(spotfeature,layer){
-                        return spotfeature.properties.REGION_NAME == region;
-                    },
-                    onEachFeature : onSpotClick
+                        switch (activity){
+                            case "Ski" : return spot.setIcon(skiiconSpotSelected);
+                            case "Climbing" : return spot.setIcon(climbiconSpotSelected);
+                            case "Surf" : return spot.setIcon(watericonSpotSelected);
+                            case "Vanlife" : return spot.setIcon(lifestyleiconSelected);
+                        }
+                    }
                 });
-                map.removeLayer(regionLayer);
-                map.addLayer(selectLayer);
-                // if the region clicked is a ski region, add a selection layer with the ski routes
-                if ($(this).find(".text-light-grey").text().split(" ")[0] == "Ski"){
-                    if (routedata != undefined){
-                        if(map.hasLayer(selectrouteLayer)){
-                            map.removeLayer(selectrouteLayer);
-                        }
-                        selectrouteLayer = L.geoJSON(routedata,{
-                            filter: function(routefeature,layer){
-                                return routefeature.properties.REGION_NAME == region;
-                            },
-                            style: {"color":"#006699", "weigth":5, "opacity":0.7},
-                            onEachFeature : onRouteClick                         
-                        });
-                        map.addLayer(selectrouteLayer);                     
-                    }
-                }
-                if (map.hasLayer(selectrouteLayer) == true){
-                    map.fitBounds(selectrouteLayer.getBounds());
-                    setTimeout(function(){
-                        selectLayerZoom = map.getZoom();
-                    }, 300);                       
-                }else{
-                    map.fitBounds(selectLayer.getBounds());
-                    setTimeout(function(){
-                        selectLayerZoom = map.getZoom();
-                    }, 300);
-                }
-                // update url with the selected region, change space with '-'
-                updateUrlParameters(window.location.href,$(this).find("h6").text().split(' ').join('-'),'unchanged','unchanged','unchanged','unchanged');
-
-                // Load spots into the sidebar according to the region selected
-                loadSpotSidebar(spotdata, $(this).find("h6").text());
             }
-        }
 
-        // Case when there is only spots in the sidebar
-        else{
-            if (getUrlParameters(window.location.href).spot == undefined){
-                // Case when a region is selected
-                if (getUrlParameters(window.location.href).region != undefined){
-                    resetOriginalIcon();
-                    var selectedspot = $(this).find("h6").text();
-                    var activity = $(this).find(".text-light-grey").text().split(" ")[0];
-                    if (map.hasLayer(selectLayer)){
-                        selectLayer.eachLayer(function(spot){
-                            if (spot.feature.properties.NAME == selectedspot){
-                                if (activity != "Ski"){
-                                    map.setView([spot.feature.geometry.coordinates[1],spot.feature.geometry.coordinates[0]],14);
-                                }
-                                switch (activity){
-                                    case "Ski" : return spot.setIcon(rockiconSpotSelected);
-                                    case "Climbing" : return spot.setIcon(rockiconSpotSelected);
-                                    case "Surf" : return spot.setIcon(watericonSpotSelected);
-                                    case "Vanlife" : return spot.setIcon(lifestyleiconSelected);
-                                }
-                            }
-                        });
+            if (activity == "Ski"){
+                routeLayer.eachLayer(function(route){
+                    if (route.feature.properties.SPOT_NAME == selectedspot){
+                        route.setStyle({"color":"#006699", "weigth":5, "opacity":1});
+                        map.fitBounds(route.getBounds());
+                        previousZoom = map.getBoundsZoom(route.getBounds());
                     }
-                    if (map.hasLayer(selectrouteLayer)){
-                        selectrouteLayer.eachLayer(function(route){
-                            if (route.feature.properties.SPOT_NAME == selectedspot){
-                                route.setStyle({"color":"#006699", "weigth":5, "opacity":1});
-                                map.fitBounds(route.getBounds());
-                            }
-                        });
-                    }
+                });
 
-                    // update url with the selected spot, change space with '-'
-                    updateUrlParameters(window.location.href,'unchanged',selectedspot.split(' ').join('-'),'unchanged','unchanged','unchanged');
-
-                    // Load selected spot into the sidebar
-                    if (spotdata != undefined){
-                        loadSelectedSpotSidebar(spotdata,selectedspot);
-                    }
-                }
-                // Case when no region is selected but zoomlevel is greater than 9
-                if (getUrlParameters(window.location.href).region == undefined && parseInt(getUrlParameters(window.location.href).zoom) > 9){
-                    resetOriginalIcon();
-                    var selectedspot = $(this).find("h6").text();
-                    var activity = $(this).find(".text-light-grey").text().split(" ")[0];
-                    if (map.hasLayer(spotLayer)){
-                        spotLayer.eachLayer(function(spot){
-                            if (spot.feature.properties.NAME == selectedspot){
-                                if (activity != "Ski"){
-                                    map.setView([spot.feature.geometry.coordinates[1],spot.feature.geometry.coordinates[0]],14);
-                                }
-                                switch (activity){
-                                    case "Ski" : return spot.setIcon(rockiconSpotSelected);
-                                    case "Climbing" : return spot.setIcon(rockiconSpotSelected);
-                                    case "Surf" : return spot.setIcon(watericonSpotSelected);
-                                    case "Vanlife" : return spot.setIcon(lifestyleiconSelected);
-                                }
-                            }
-                        });
-                    }
-                    if (map.hasLayer(routeLayer)){
-                        routeLayer.eachLayer(function(route){
-                            if (route.feature.properties.SPOT_NAME == selectedspot){
-                                route.setStyle({"color":"#006699", "weigth":5, "opacity":1});
-                                map.fitBounds(route.getBounds());
-                            }
-                        });
-                    }
-
-                    // update url with the selected spot, change space with '-'
-                    updateUrlParameters(window.location.href,'unchanged',selectedspot.split(' ').join('-'),'unchanged','unchanged','unchanged');
-
-                    // Load selected spot into the sidebar
-                    if (spotdata != undefined){
-                        loadSelectedSpotSidebar(spotdata,selectedspot);
-                    }   
-                }
+                map.addLayer(routeLayer);
             }
+
+            // update url with the selected spot, change space with '-'
+            updateUrlParameters(window.location.href,selectedspot.split(' ').join('-'),'unchanged','unchanged','unchanged');
+
+            // Load selected spot into the sidebar
+            if (spotdata != undefined){
+                loadSelectedSpotSidebar(spotdata,selectedspot);
+            }   
         }
     }); 
 
-// Action to do when the user clicks on the back arrow ----------------------------------------------------------------------------------------------
+// Action to do when the user clicks on the back arrow, only when 1 spot is selected ----------------------------------------------------------------
     $("#back-arrow-button").click(function(){
-        if (getUrlParameters(window.location.href).region != undefined || parseInt(getUrlParameters(window.location.href).zoom) >= 9){
-            // Case when there are (unselected) spots in the sidebar
-            if (getUrlParameters(window.location.href).spot == undefined){
-                if (regiondata != undefined){
-                    loadRegionSidebar(regiondata);
-                }
-                if (map.hasLayer(selectLayer)){
-                    map.removeLayer(selectLayer);
-                }
-                if (map.hasLayer(selectrouteLayer)){
-                    map.removeLayer(selectrouteLayer);
-                }
-                if (map.hasLayer(spotLayer)){
-                    map.removeLayer(spotLayer);
-                }
-                if (map.hasLayer(routeLayer)){
-                    map.removeLayer(routeLayer);
-                }
-                regionLayer.addTo(map);
-                selectLayerZoom = undefined;
+        if (getUrlParameters(window.location.href).spot != undefined){
 
-                var sortedBydate = [];
-                for (var i = 0; i < regiondata.length; i++){
-                    sortedBydate.push({index:i, date:new Date(regiondata[i].properties.DATE)});
-                }
-                sortedBydate.sort((a, b) => b.date - a.date);
-                map.setView([regiondata[sortedBydate[0].index].geometry.coordinates[1],regiondata[sortedBydate[0].index].geometry.coordinates[0]],5);
-                regionLayer.addTo(map);
+            resetOriginalIcon();
 
-                updateUrlParameters(window.location.href,undefined,undefined,map.getCenter().lat,map.getCenter().lng,map.getZoom());
-            }
-            // Case when there are 1 selected spot
-            else{
-                if (getUrlParameters(window.location.href).region == undefined){
-                    if (regiondata != undefined){
-                        loadRegionSidebar(regiondata);
-                    }
+            if (routeLayer != undefined){
+                routeLayer.setStyle({"color":"#006699", "weigth":5, "opacity":0.6});
+            }    
 
-                    resetOriginalIcon();
+            updateUrlParameters(window.location.href,undefined,map.getCenter().lat,map.getCenter().lng,map.getZoom());       
 
-                    if (routeLayer != undefined){
-                        routeLayer.setStyle({"color":"#006699", "weigth":5, "opacity":0.6});
-                    }
-                    if (map.hasLayer(spotLayer)){
-                        map.removeLayer(spotLayer);
-                    }
-                    if (map.hasLayer(routeLayer)){
-                        map.removeLayer(routeLayer);
-                    }
-                    regionLayer.addTo(map);
-                    map.fitBounds(regionLayer.getBounds());
-                    updateUrlParameters(window.location.href,undefined,undefined,map.getCenter().lat,map.getCenter().lng,map.getZoom());
-                }
-                else{
-                    resetOriginalIcon();
-
-                    if (routeLayer != undefined){
-                        routeLayer.setStyle({"color":"#006699", "weigth":5, "opacity":0.6});
-                    }
-                    if (selectrouteLayer != undefined){
-                        selectrouteLayer.setStyle({"color":"#006699", "weigth":5, "opacity":0.6});
-                    }
-
-                    if (map.hasLayer(selectrouteLayer)){
-                        map.fitBounds(selectrouteLayer.getBounds());
-                    }
-                    else{
-                        map.fitBounds(selectLayer.getBounds());
-                    }
-
-                    if (spotdata != undefined){
-                        loadSpotSidebar(spotdata, getUrlParameters(window.location.href).region.split('-').join(' '))
-                    }
-
-                    updateUrlParameters(window.location.href,"unchanged",undefined,map.getCenter().lat,map.getCenter().lng,map.getZoom());
-                }
+            if (spotdata != undefined){
+                loadSpotSidebar(spotdata);
             }
         }
+
+        $("#back-arrow-button").html('');
     });
 
 // Action to do when the user clicks on the header icon --------------------------------------------------------------------------------------------
