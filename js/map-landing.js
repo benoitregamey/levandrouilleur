@@ -20,34 +20,30 @@ var map = L.map('map', {
 	layers: lightbasemap,
     minZoom: 2,
     gestureHandling: true,
+    zoomSnap: 0.1,
+    wheelPxPerZoomLevel: 14,
 });
 
 // Icons for the markers ----------------------------------------------------------------------------------------------------------------------------
-var surficonRegio = L.icon({
-    iconUrl: 'icon/map/marker-icon-surf.png',
-    iconSize:     [19, 42], // original 19,42
-    iconAnchor:   [8, 16], 
+var climbiconSpot = L.icon({
+    iconUrl: 'icon/map/marker-icon-climb.png',
+    iconSize:     [12, 38], // original 13,42
+    iconAnchor:   [7, 21], 
 });
 
-var skiiconRegio = L.icon({
-    iconUrl: 'icon/map/marker-icon-ski.png',
-    iconSize:     [22, 42], // original 22,42
-    iconAnchor:   [11, 21], 
-});
-
-var climbiconRegio = L.icon({
+var climbiconSpotSelected = L.icon({
     iconUrl: 'icon/map/marker-icon-climb.png',
     iconSize:     [13, 42], // original 13,42
     iconAnchor:   [7, 21], 
 });
 
-var rockiconSpot = L.icon({
+var skiiconSpot = L.icon({
     iconUrl: 'icon/map/marker-icon-spot-rock.png',
     iconSize:     [23,17], // original 34,25
     iconAnchor:   [11, 9], 
 });
 
-var rockiconSpotSelected = L.icon({
+var skiiconSpotSelected = L.icon({
     iconUrl: 'icon/map/marker-icon-spot-rock.png',
     iconSize:     [34,25], // original 34,25
     iconAnchor:   [17, 12], 
@@ -79,66 +75,50 @@ var lifestyleiconSelected = L.icon({
 
 
 // Initializing layers and data ---------------------------------------------------------------------------------------------------------------------
-var regionLayer;
-var regiondata;
 var spotLayer;
 var spotdata;
-var selectLayer;
-var selectLayerZoom;
 var routeLayer;
 var routedata;
 var selectrouteLayer;
+var previousZoom;
 
-// Initializing regionLayer -------------------------------------------------------------------------------------------------------------------------
-$.getJSON('data/region.geojson',function(data){
-	regionLayer = L.geoJSON(data,{
-    	pointToLayer: function (feature, latlng) {
-    		switch (feature.properties.ACTIVITY){
-    			case "1" : return L.marker(latlng, {icon: skiiconRegio});
-    			case "2" : return L.marker(latlng, {icon: climbiconRegio});
-    			case "3" : return L.marker(latlng, {icon: surficonRegio});
+// Initializing spotLayer ---------------------------------------------------------------------------------------------------------------------------
+$.getJSON('data/spot.geojson',function(data){
+    spotLayer = L.markerClusterGroup({
+        showCoverageOnHover: false,
+    });
+    spotLayer.addLayer(L.geoJSON(data,{
+        pointToLayer: function(feature, latlng){
+            switch (feature.properties.ACTIVITY){
+                case "1" : return L.marker(latlng, {icon: skiiconSpot});
+                case "2" : return L.marker(latlng, {icon: climbiconSpot});
+                case "3" : return L.marker(latlng, {icon: watericonSpot});
                 case "4" : return L.marker(latlng, {icon: lifestyleicon});
-    		}
-    	},
-        // Link to the map when a region is clicked
-        onEachFeature: function(feature, layer){
-            layer.on('click', function(){
-                window.location.href = "/map?region=" + feature.properties.NAME.split(' ').join('-');
-            });
-        }
-  	});
+            }
+        },
+        onEachFeature: onSpotClick
+    }));
 
-    regiondata = data.features;
+    spotdata = data.features;
 
     var sortedBydate = [];
-    for (var i = 0; i < regiondata.length; i++){
-        sortedBydate.push({index:i, date:new Date(regiondata[i].properties.DATE)});
+    for (var i = 0; i < spotdata.length; i++){
+        sortedBydate.push({index:i, date:new Date(spotdata[i].properties.DATE)});
     }
     sortedBydate.sort((a, b) => b.date - a.date);
-    map.setView([regiondata[sortedBydate[0].index].geometry.coordinates[1],regiondata[sortedBydate[0].index].geometry.coordinates[0]],5);
-    regionLayer.addTo(map);
-
+    map.setView([spotdata[sortedBydate[0].index].geometry.coordinates[1],spotdata[sortedBydate[0].index].geometry.coordinates[0]],5);
+    spotLayer.addTo(map);
 });
 
-// function that reset original icon to the layers selectLayer and spotLayer
+// function that reset original icon to the spotLayer
 function resetOriginalIcon(){
-    if (map.hasLayer(selectLayer)){
-        selectLayer.eachLayer(function(originalIcon){
-            if (originalIcon.feature.properties.ACTIVITY == "1" || originalIcon.feature.properties.ACTIVITY == "2"){
-                originalIcon.setIcon(rockiconSpot);
-            }
-            if (originalIcon.feature.properties.ACTIVITY == "3"){
-                originalIcon.setIcon(watericonSpot);
-            }
-            if (originalIcon.feature.properties.ACTIVITY == "4"){
-                originalIcon.setIcon(lifestyleicon);
-            }                            
-        })
-    }
     if (map.hasLayer(spotLayer)){
         spotLayer.eachLayer(function(originalIcon){
-            if (originalIcon.feature.properties.ACTIVITY == "1" || originalIcon.feature.properties.ACTIVITY == "2"){
-                originalIcon.setIcon(rockiconSpot);
+            if (originalIcon.feature.properties.ACTIVITY == "1"){
+                originalIcon.setIcon(skiiconSpot);
+            }
+            if (originalIcon.feature.properties.ACTIVITY == "2"){
+                originalIcon.setIcon(climbiconSpot);
             }
             if (originalIcon.feature.properties.ACTIVITY == "3"){
                 originalIcon.setIcon(watericonSpot);
@@ -161,22 +141,6 @@ function onRouteClick(feature,layer){
         window.location.href = "/map?spot=" + feature.properties.SPOT_NAME.split(' ').join('-'); 
     });   
 }
-
-// Initializing spotLayer ---------------------------------------------------------------------------------------------------------------------------
-$.getJSON('data/spot.geojson',function(data){
-    spotLayer = L.geoJSON(data,{
-        pointToLayer: function(feature, latlng){
-            switch (feature.properties.ACTIVITY){
-                case "1" : return L.marker(latlng, {icon: rockiconSpot});
-                case "2" : return L.marker(latlng, {icon: rockiconSpot});
-                case "3" : return L.marker(latlng, {icon: watericonSpot});
-                case "4" : return L.marker(latlng, {icon: lifestyleicon});
-            }
-        },
-        onEachFeature: onSpotClick
-    });
-    spotdata = data.features;
-});
 
 // Initializing routeLayer --------------------------------------------------------------------------------------------------------------------------
 $.getJSON('data/route.geojson',function(data){
@@ -204,55 +168,18 @@ map.on('zoomend', function() {
     }
 });
 
-// Function to manage regionLayer, spotLayer and selectlayer according to the zoomlevel -------------------------------------------------------------
+// Function to manage routelayer according to the zoomlevel -------------------------------------------------------------
 map.on('moveend', function() {
     var zoomlevel = map.getZoom();
-    if (zoomlevel > 9){
-        if (map.hasLayer(regionLayer)) {
-            map.removeLayer(regionLayer);
-            // check if layer already loaded from JSON
-            if (spotLayer != undefined && map.hasLayer(selectLayer) == false && routeLayer != undefined){
-                map.addLayer(spotLayer);
-                map.addLayer(routeLayer);
-            }          
+    if (zoomlevel > 11){
+        if (map.hasLayer(routeLayer) == false && routeLayer != undefined) {
+            map.addLayer(routeLayer);
+        }       
+    }
+    if (zoomlevel <= 11){
+        if (map.hasLayer(routeLayer)) {
+            map.removeLayer(routeLayer);
         } 
-    }
-
-    if (map.hasLayer(selectLayer) == false){
-
-        if (zoomlevel <= 9){
-
-            resetOriginalIcon();
-
-            if (map.hasLayer(spotLayer)){
-                map.removeLayer(spotLayer);
-                map.removeLayer(routeLayer);
-                routeLayer.setStyle({"color":"#006699", "weigth":5, "opacity":0.6});
-            }
-
-            // check if layer already loaded from JSON
-            if (regionLayer != undefined){
-                map.addLayer(regionLayer);
-            }
-        }   
-    }
-
-    if (map.hasLayer(selectLayer)){
-        if (zoomlevel < selectLayerZoom && zoomlevel <= 9){
-
-            resetOriginalIcon();
-
-            map.removeLayer(selectLayer);
-            if (map.hasLayer(selectrouteLayer)){
-                map.removeLayer(selectrouteLayer);
-            }
-            selectLayerZoom = undefined;
-
-            // check if layer already loaded from JSON
-            if (regionLayer != undefined){
-                map.addLayer(regionLayer);
-            }
-        }  
     }
 });
 

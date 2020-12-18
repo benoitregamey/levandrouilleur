@@ -16,11 +16,13 @@ Structure
     	* js/map-landing.js --> handles the map functions on the landing page (not on the webmapping application page)
     	* font/...
     	* icon/...
+        * data/... --> contains the geojson read by ajax functions to populate html content and leaflet features
     	* Jquery
     	* Bootstrap 4
     	* fontawesome
     	* leaflet
     	* leaflet-gestures.handling --> handles the UX on mobile devices for the map on the landing page (pan only with 2 fingers)
+        * leaflet.markercluster (js + css) --> handles the automatic clustering of markers
     
 * map.html --> webmapping application
 	* Dependencies
@@ -34,5 +36,6 @@ Structure
     	* fontawesome
     	* leaflet
 		* Instagram embed API and JS --> handles the dynamic creation of an iframe with instagram post
+        * leaflet.markercluster (js + css) --> handles the automatic clustering of markers
         
 
