@@ -1,5 +1,5 @@
 // Initializing 2 basemaps --------------------------------------------------------------------------------------------------------------------------
-var lightbasemap = L.tileLayer('https://api.maptiler.com/maps/positron/{z}/{x}/{y}.png?key=OeICOfldMgEZFl7CAgF2',{
+var lightbasemap = L.tileLayer('https://api.maptiler.com/maps/positron/{z}/{x}/{y}.png?key=kYPqbESxdZxN8lWAi2ju',{
         tileSize: 512,
         zoomOffset: -1,
         minZoom: 1,
@@ -7,7 +7,7 @@ var lightbasemap = L.tileLayer('https://api.maptiler.com/maps/positron/{z}/{x}/{
         crossOrigin: true
 });
 
-var topobasemap = L.tileLayer('https://api.maptiler.com/maps/topo/{z}/{x}/{y}.png?key=OeICOfldMgEZFl7CAgF2',{
+var topobasemap = L.tileLayer('https://api.maptiler.com/maps/topo/{z}/{x}/{y}.png?key=kYPqbESxdZxN8lWAi2ju',{
         tileSize: 512,
         zoomOffset: -1,
         minZoom: 1,

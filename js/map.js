@@ -1,5 +1,5 @@
 // Initializing 2 basemaps --------------------------------------------------------------------------------------------------------------------------
-var lightbasemap = L.tileLayer('https://api.maptiler.com/maps/positron/{z}/{x}/{y}.png?key=OeICOfldMgEZFl7CAgF2',{
+var lightbasemap = L.tileLayer('https://api.maptiler.com/maps/positron/{z}/{x}/{y}.png?key=kYPqbESxdZxN8lWAi2ju',{
         tileSize: 512,
         zoomOffset: -1,
         minZoom: 1,
@@ -7,7 +7,7 @@ var lightbasemap = L.tileLayer('https://api.maptiler.com/maps/positron/{z}/{x}/{
         crossOrigin: true
 });
 
-var topobasemap = L.tileLayer('https://api.maptiler.com/maps/topo/{z}/{x}/{y}.png?key=OeICOfldMgEZFl7CAgF2',{
+var topobasemap = L.tileLayer('https://api.maptiler.com/maps/topo/{z}/{x}/{y}.png?key=kYPqbESxdZxN8lWAi2ju',{
         tileSize: 512,
         zoomOffset: -1,
         minZoom: 1,
@@ -172,11 +172,11 @@ function getUrlParameters(url){
     return results;
 }
 
-// function that loads the spots available in data into the sidebar, possibility to filter by region ------------------------------------------------
+// function that loads the spots available in data into the sidebar ------------------------------------------------
 // Loads only the spots that are on the current map extent !
 function loadSpotSidebar(data){
 
-    $(".sidebar").empty();
+    $(".sidebar-content").empty();
 
     var sortedBydate = [];
     for (var i = 0; i < data.length; i++){
@@ -228,7 +228,7 @@ function loadSpotSidebar(data){
         htmlstring += '<p class="p small mb-0 pb-1 line-height-110 text-dark">' + data[index].properties.LEAD_TEXT + '</p>';
         htmlstring += '</div>';
         htmlstring += '</div>';
-        $(".sidebar").append(htmlstring);
+        $(".sidebar-content").append(htmlstring);
     }
     $("#activity-count").html(sortedBydate.length);
 }
@@ -236,7 +236,7 @@ function loadSpotSidebar(data){
 // function that loads the selected spot into the sidebar with embbed instagram post ----------------------------------------------------------------
 function loadSelectedSpotSidebar(data,spot){
 
-    $(".sidebar").empty();
+    $(".sidebar-content").empty();
 
     var index;
     for (var i = 0; i < data.length; i++){
@@ -268,15 +268,15 @@ function loadSelectedSpotSidebar(data,spot){
     htmlstring += '<p class="p mb-3 line-height-110 text-dark">' + data[index].properties.LEAD_TEXT + '</p>';
     htmlstring += '</div>';
     htmlstring += '</div>';
-    $(".sidebar").append(htmlstring);
+    $(".sidebar-content").append(htmlstring);
 
     if (data[index].properties.INSTA_POST_ID != null){
         var instapost;
         var request = new XMLHttpRequest();
-        request.open('GET', 'https://graph.facebook.com/v8.0/instagram_oembed?url=https://www.instagram.com/p/' + data[index].properties.INSTA_POST_ID + '/&access_token=358977528652478|e602aadfadb8814f5cf7c19932040fa5&omitscript=true', true);
+        request.open('GET', 'https://graph.facebook.com/v11.0/instagram_oembed?url=https://www.instagram.com/p/' + data[index].properties.INSTA_POST_ID + '/&access_token=358977528652478|e602aadfadb8814f5cf7c19932040fa5&omitscript=true', true);
         request.onload = function() {
             instapost = JSON.parse(this.response).html;
-            $(".sidebar").append(instapost);
+            $(".sidebar-content").append(instapost);
             instgrm.Embeds.process();
         }
         request.send();     
@@ -369,11 +369,12 @@ function onSpotClick(feature,layer){
         // update URL with selected spot, replace space with '-'
         updateUrlParameters(window.location.href,feature.properties.NAME.split(' ').join('-'),'unchanged','unchanged','unchanged'); 
 
-        // If sidebar is collapsed, expand it
-        if ($(".menu-button").hasClass("collapsed")){
-            expandSidebar();
-        }
-        
+        // If sidebar is collapsed, expand it, add a timeout to be sure that the zoom and pan are finished before expanding the sidebar
+        setTimeout(function(){
+            if ($(".menu-button").hasClass("collapsed")){
+                expandSidebar();
+            }
+        },500);
     }); 
 }
 
@@ -401,10 +402,12 @@ function onRouteClick(feature,layer){
         // update URL with selected spot, replace space with '-'
         updateUrlParameters(window.location.href,feature.properties.SPOT_NAME.split(' ').join('-'),'unchanged','unchanged','unchanged');
 
-        // If sidebar is collapsed, expand it
-        if ($(".menu-button").hasClass("collapsed")){
-            expandSidebar();
-        }
+        // If sidebar is collapsed, expand it, add a timeout to be sure that the zoom and pan are finished before expanding the sidebar
+        setTimeout(function(){
+            if ($(".menu-button").hasClass("collapsed")){
+                expandSidebar();
+            }
+        },500);
     });   
 }
 
@@ -461,6 +464,7 @@ $.getJSON('data/spot.geojson',function(data){
                     map.removeLayer(lightbasemap);
                     map.addLayer(topobasemap);
                     map.setView([spot.feature.geometry.coordinates[1],spot.feature.geometry.coordinates[0]],14);
+                    previousZoom = 14;
                 } 
                 switch (spot.feature.properties.ACTIVITY){
                     case "1" : return spot.setIcon(skiiconSpotSelected);
@@ -472,7 +476,8 @@ $.getJSON('data/spot.geojson',function(data){
         });
 
         // Load the selected spot into the sidebar and expand it
-        loadSelectedSpotSidebar(data.features,getUrlParameters(window.location.href).spot.split('-').join(' ')); 
+        loadSelectedSpotSidebar(data.features,getUrlParameters(window.location.href).spot.split('-').join(' '));
+        expandSidebar(); 
     }
 });
 
@@ -496,6 +501,7 @@ $.getJSON('data/route.geojson',function(data){
                         map.addLayer(topobasemap);
                     }
                     map.fitBounds(route.getBounds());
+                    previousZoom = map.getBoundsZoom(route.getBounds());
                 }
             });
         }
@@ -608,8 +614,101 @@ function expandSidebar(){
     }
     else{
         $(".sidebar").addClass("sidebar-expanded");
+        if ($(window).width() <= 658) {
+            $('.sidebar-expanded').css('max-height', '85vh');
+            $('.sidebar-content').css('max-height', 'calc(85vh - 60px)');              
+        }
+        else{
+            $('.sidebar-expanded').css('max-height', '100vh');
+            $('.sidebar-content').css('max-height', 'calc(100vh - 60px)');       
+        }        
     }
 }
+
+// Functions to handle the sidebar by touchscreen for smartphone screen sizes
+// -------------------------------------------------------------------------------------------------------------------------------------------------
+function handleTouch(e) {
+    var y = e.changedTouches[0].clientY;
+    var maxheight = parseInt((y/$(window).height())*100)
+    if ($(window).width() <= 658){
+        if (maxheight < 85){
+            $('.sidebar-expanded').css('max-height', maxheight + 'vh');
+            $('.sidebar-content').css('max-height', 'calc(' + maxheight +'vh - 60px)');
+        }
+        else{
+            $('.sidebar-expanded').css('max-height', '85vh');
+            $('.sidebar-content').css('max-height', 'calc(85vh - 60px)');
+        }
+    }
+}
+
+function handleTouchEnd(e) {
+    var y = e.changedTouches[0].clientY;
+    var maxheight = parseInt((y/$(window).height())*100)
+    if ($(window).width() <= 658){
+        if (maxheight < 42){
+            expandSidebar();
+        }
+        else{
+            $('.sidebar-expanded').css('max-height', '85vh');
+            $('.sidebar-content').css('max-height', 'calc(85vh - 60px)');        
+        }
+    }
+}
+
+$('.sidebar-bottom').on('touchstart', handleTouch)
+$('.sidebar-bottom').on('touchmove', handleTouch)
+$('.sidebar-bottom').on('touchend', handleTouchEnd)
+
+$(window).resize(function(){
+    if ($(window).width() <= 658) {
+        $('.sidebar-expanded').css('max-height', '85vh');
+        $('.sidebar-content').css('max-height', 'calc(85vh - 60px)');              
+    }
+    else{
+        $('.sidebar-expanded').css('max-height', '100vh');
+        $('.sidebar-content').css('max-height', 'calc(100vh - 60px)');       
+    }
+});
+
+// when the user touch the map, the sidebar collapses
+map.on('movestart click zoomstart',function(){
+    if ($(window).width() <= 658){
+        var sidebarClasses = $(".sidebar").attr("class").split(" ");
+        var sidebarexpanded = false;
+        for (var i = 0; i < sidebarClasses.length; i++){
+            if (sidebarClasses[i] == "sidebar-expanded"){
+                sidebarexpanded = true;
+                break;
+            }
+        }
+        if (sidebarexpanded){
+            $(".sidebar").removeClass("sidebar-expanded");
+            $(".menu-button").addClass("collapsed");
+        }     
+    }    
+});
+
+// Functions to handle the sidebar by touchscreen for bigger screen sizes
+// -------------------------------------------------------------------------------------------------------------------------------------------------
+var startx;
+var endx;
+
+function handleTouchBigScreenStart(e){
+    startx = e.changedTouches[0].clientX;
+}
+
+function handleTouchBigScreenEnd(e){
+    endx = e.changedTouches[0].clientX;
+    if (startx - endx > 100){
+        if ($(window).width() > 658){
+            expandSidebar();
+        }
+    }
+}
+
+$('.sidebar-content').on('touchstart', handleTouchBigScreenStart)
+$('.sidebar-content').on('touchend', handleTouchBigScreenEnd)
 
 $(document).ready(function(){
 // Actions to do when the user clicks on the menu button --------------------------------------------------------------------------------------------
@@ -697,3 +796,5 @@ $(document).ready(function(){
         window.location.href = 'https://levandrouilleur.com';
     });
 });
+
+
