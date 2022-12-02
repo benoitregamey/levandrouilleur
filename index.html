@@ -50,7 +50,7 @@
 <body>
 
 <!-- Navigation -->
-<nav class="navbar navbar-expand-md navbar-light bg-transparent">
+<nav class="navbar navbar-expand-md navbar-light">
   <div class="container-fluid">
     <button class="navbar-toggler ml-auto collapsed" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
       <span class="icon-bar top-bar"></span>
@@ -76,8 +76,11 @@
 <!-- Header -->
 <div id="header" class="container-fluid height-100">
   <div class="row h-100 justify-content-center align-items-center"> 
-    <div class="col-10 col-sm-8 col-md-6">
-      <img class = "img-fluid mx-auto d-block" src="icon/header-logo.png" style="max-height: 70vh">
+    <div class="col-10">
+      <picture>
+        <source media="(min-width: 768px)" srcset="icon/home_logo.png">
+        <img class = "img-fluid mx-auto d-block" src="icon/home_logo_xs.png" style="max-height: 50vh">
+      </picture>
     </div>
   </div>
 </div>
@@ -87,7 +90,7 @@
 <div id="about" class="container-fluid">
   <div class="row align-items-center">
     <div class="col-sm-4 my-5 my-sm-0 py-1">
-      <img class="img-fluid mx-auto d-block max-width-70-xs max-width-30-sm max-height-30" src="icon/about-icon.png">
+      <img class="img-fluid mx-auto d-block max-width-50-xs max-width-30-sm max-height-30" src="icon/about-icon.png">
     </div>
     <div class="col-sm-8 bg-orange height-40">
       <div class="row h-100 align-items-center mx-0">
