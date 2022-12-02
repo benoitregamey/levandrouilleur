@@ -59,11 +59,14 @@ body{
 	background-color: rgba(252, 102, 108, 1);
 }
 
+.bg-teal{
+	background-color: rgba(0, 121, 144, 1);
+}
+
 .orange:hover{
 	color: rgba(252, 102, 108, 1);
 	cursor: pointer;
 }
-
 
 /* Styles for the navigation bar */
 /* ------------------------------------------------------------------------------------------------------------------------------------------- */
