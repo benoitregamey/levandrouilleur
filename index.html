@@ -14,14 +14,14 @@
   <link rel="shortcut icon" type="image/png" href="/favicon.png">
 
   <!-- Bootstrap core CSS -->
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.2.1/dist/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
 
   <!-- Custom fonts for this template -->
+  <link href="https://fonts.cdnfonts.com/css/dosis" rel="stylesheet">
   <script src="https://kit.fontawesome.com/460a6dede4.js" crossorigin="anonymous"></script>
-  <script src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
-        crossorigin="anonymous"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
-  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+  <script src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.14.6/dist/umd/popper.min.js" integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.2.1/dist/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.0.3/leaflet.js"></script>
   <script src="https://cdn.maptiler.com/mapbox-gl-js/v0.53.0/mapbox-gl.js"></script>
   <script src="https://cdn.maptiler.com/mapbox-gl-leaflet/latest/leaflet-mapbox-gl.js"></script>
@@ -50,7 +50,7 @@
 <body>
 
 <!-- Navigation -->
-<nav class="navbar navbar-expand-md navbar-light bg-transparent">
+<nav class="navbar navbar-expand-md navbar-light">
   <div class="container-fluid">
     <button class="navbar-toggler ml-auto collapsed" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
       <span class="icon-bar top-bar"></span>
@@ -66,6 +66,9 @@
           <a class="nav-link" href="https://levandrouilleur.com/map">Carte</a>
         </li>
         <li class="nav-item">
+          <a class="nav-link" href="#book">Book</a>
+        </li>
+        <li class="nav-item">
           <a class="nav-link" href="#follow">Suivez-nous</a>
         </li>
       </ul>
@@ -76,8 +79,11 @@
 <!-- Header -->
 <div id="header" class="container-fluid height-100">
   <div class="row h-100 justify-content-center align-items-center"> 
-    <div class="col-10 col-sm-8 col-md-6">
-      <img class = "img-fluid mx-auto d-block" src="icon/header-logo.png" style="max-height: 70vh">
+    <div class="col-10">
+      <picture>
+        <source media="(min-width: 768px)" srcset="icon/home_logo.png">
+        <img class = "img-fluid mx-auto d-block" src="icon/home_logo_xs.png" style="max-height: 50vh">
+      </picture>
     </div>
   </div>
 </div>
@@ -87,13 +93,13 @@
 <div id="about" class="container-fluid">
   <div class="row align-items-center">
     <div class="col-sm-4 my-5 my-sm-0 py-1">
-      <img class="img-fluid mx-auto d-block max-width-70-xs max-width-30-sm max-height-30" src="icon/about-icon.png">
+      <img class="img-fluid mx-auto d-block max-width-50-xs max-width-30-sm max-height-30" src="icon/about-icon.png">
     </div>
     <div class="col-sm-8 bg-orange height-40">
       <div class="row h-100 align-items-center mx-0">
         <div class="col">
-          <h5 class="text-white mx-3 pt-3">Embarquez pour un voyage en van aménagé à travers l'Europe pour grimper, skier et surfer ! Découvrez nos aventures sur la carte !</h5>
-          <h5 class="text-center text-white"><a href="#map" class="text-white"><i class="fas fa-angle-double-down fa-lg"></i></a></h5>
+          <h5 class="text-white mx-3 pt-3 font-weight-light">Embarquez pour un voyage en van aménagé à travers l'Europe pour grimper, skier et surfer ! Découvrez nos aventures sur la carte !</h5>
+          <h5 class="text-center text-white"><a href="#map" class="text-white"><i class="fa-solid fa-angles-down fa-lg"></i></a></h5>
         </div>
       </div>
     </div>
@@ -103,6 +109,49 @@
 <!-- Map -->
 
 <div id="map" class="container-fluid height-90"></div>
+
+<!-- Book -->
+
+<div id="book" class="container-fluid">
+  <div class="row">
+    <div class="col-md-4 bg-teal">
+      <div class="row h-100 align-items-center mx-0">
+        <div class="col">
+          <h5 class="text-white text-md-left text-lg-center text-center mx-3 mt-3 pt-2 mb-2 font-weight-light">Tout frais sorti de l'imprimerie, découvrez notre nouveau book :</h5>
+          <h5 class="text-white text-md-left text-lg-center text-center mx-3 font-weight-light">53° Aventures en van aménagé pour grimper, skier & surfer</h5>
+          <h5 class="text-white text-md-left text-lg-center text-center mx-3 font-weight-light">-</h5>
+          <h5 class="text-md-left text-lg-center text-center mx-3 mb-3 pb-2 font-weight-light">
+            <a class="text-white" href="https://www.blurb.fr/b/11283151-53-aventures-en-van-am-nag-pour-grimper-skier-et">J'en veux un <i class="fa-solid fa-cart-shopping"></i></a>
+          </h5>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-8 px-0">
+      <div id="carousel" class="carousel slide" data-ride="carousel" data-touch="true">
+        <div class="carousel-inner">
+          <div class="carousel-item active">
+            <img class="d-block w-100" src="icon/carrousel-1.jpg">
+          </div>
+          <div class="carousel-item">
+            <img class="d-block w-100" src="icon/carrousel-2.jpg">
+          </div>
+          <div class="carousel-item">
+            <img class="d-block w-100" src="icon/carrousel-3.jpg">
+          </div>
+          <div class="carousel-item">
+            <img class="d-block w-100" src="icon/carrousel-4.jpg">
+          </div>
+          <div class="carousel-item">
+            <img class="d-block w-100" src="icon/carrousel-5.jpg">
+          </div>
+          <div class="carousel-item">
+            <img class="d-block w-100" src="icon/carrousel-6.jpg">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- Follow -->
 

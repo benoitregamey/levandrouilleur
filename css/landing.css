@@ -2,13 +2,8 @@
 /* ------------------------------------------------------------------------------------------------------------------------------------------- */
 /* Orange Color : rgba(252, 102, 108, 1) */
 
-@font-face {
-  font-family: Frutiger;
-  src: url("../font/FrutigerLTStd-Light.otf");
-}
-
 body{
-	font-family: 'Frutiger';
+	font-family: 'Dosis', sans-serif;
 }
 
 .height-100{
@@ -32,8 +27,8 @@ body{
 }
 
 @media only screen and (max-width: 576px) {
-	.max-width-70-xs{
-		max-width: 70%;
+	.max-width-50-xs{
+		max-width: 50%;
 	}
 }
 
@@ -59,11 +54,18 @@ body{
 	background-color: rgba(252, 102, 108, 1);
 }
 
+.bg-teal{
+	background-color: rgba(0, 121, 144, 1);
+}
+
+.teal{
+	color: rgba(0, 121, 144, 1);
+}
+
 .orange:hover{
 	color: rgba(252, 102, 108, 1);
 	cursor: pointer;
 }
-
 
 /* Styles for the navigation bar */
 /* ------------------------------------------------------------------------------------------------------------------------------------------- */
@@ -77,6 +79,10 @@ body{
 	display: block;
 	transition: all 0.2s;
 	margin-top: 4px
+}
+
+.navbar {
+	background-color: rgb(240,240,240);
 }
  
 .navbar-toggler {
@@ -121,27 +127,16 @@ body{
 	background-color: rgba(255, 255, 255, 0.75)
 }
 
-/* for mobile devices add a white background to the menu list, because it overlaps the header container */
-@media only screen and (max-width: 768px) {
-	.nav-item{
-		background-color: rgba(255, 255, 255, 0.95);
-	}
-}
-
 /* Styles for the Header Section */
 /* ------------------------------------------------------------------------------------------------------------------------------------------- */
 
 #header{
-	z-index: -1;
 	margin-top: -56px;
-	background-image: url("../icon/header-bg.png");
-	background-size: cover;
+	background-color: rgb(240,240,240);
 }
 
 @media only screen and (max-width: 576px) {
 	#header{
-		background-image: url("../icon/header-bg-xs.png");
-		background-size: cover;
 		margin-top: -42px;
 	}
 }
