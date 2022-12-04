@@ -2,13 +2,8 @@
 /* ------------------------------------------------------------------------------------------------------------------------------------------- */
 /* Orange Color : rgba(252, 102, 108, 1) */
 
-@font-face {
-  font-family: Frutiger;
-  src: url("../font/FrutigerLTStd-Light.otf");
-}
-
 body{
-	font-family: 'Frutiger';
+	font-family: 'Dosis', sans-serif;
 }
 
 .height-100{
@@ -61,6 +56,10 @@ body{
 
 .bg-teal{
 	background-color: rgba(0, 121, 144, 1);
+}
+
+.teal{
+	color: rgba(0, 121, 144, 1);
 }
 
 .orange:hover{

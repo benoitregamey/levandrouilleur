@@ -1,13 +1,8 @@
 /* Initials Values */
 /* ------------------------------------------------------------------------------------------------------------------------------------------- */
 
-@font-face {
-  font-family: Frutiger;
-  src: url("../font/FrutigerLTStd-Light.otf");
-}
-
 body{
-	font-family: 'Frutiger';
+	font-family: 'Dosis', sans-serif;
 }
 
 .height-100{
