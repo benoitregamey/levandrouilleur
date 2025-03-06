@@ -5,8 +5,6 @@ There is no database, using only html, css and js files. The data come from geoj
 
 Thus it is possible to host this website (static website) on AWS with S3 bucket - ACM (SSL certificate for the https) - Cloudfront (for a https enable distribution, linked to the ACM) - Route53 (DNS configuration - link between domain name and Cloudfront distribution).
 
-https://levandrouilleur.com
-
 Structure
 
 * index.html --> Landing page
